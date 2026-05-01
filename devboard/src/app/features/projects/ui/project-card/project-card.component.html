@@ -1,0 +1,71 @@
+<app-retro-window
+  [title]="'proj/' + indexLabel()"
+  [subtitle]="(displayName() ?? '') | lowercase | slice: 0 : 18"
+  [padding]="size() === 'sm' ? 'sm' : size() === 'lg' ? 'lg' : 'md'"
+>
+  <span class="card-status-wrap" window-actions>
+    <app-status-pill [status]="status()" />
+  </span>
+
+  <div class="project-heading">
+    <div>
+      <h3>{{ displayName() ?? '—' }}</h3>
+      <div class="project-facts">
+        @if (project().repositoryUrl) {
+          <span class="fact-chip">{{ repoData()?.language ?? '…' }}</span>
+          @if (showGithubStats()) {
+            <span class="fact-meta">★ {{ repoData()?.stargazers_count ?? '—' }}</span>
+          }
+        } @else {
+          <span class="fact-chip">local</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="project-description">
+    {{ displayDescription() ?? 'Projeto sem descricao por enquanto.' }}
+  </p>
+
+  <div class="tag-row">
+    @for (tag of project().tags; track tag) {
+      <span class="tag-chip">#{{ tag }}</span>
+    }
+  </div>
+
+  <div class="progress-row">
+    <span>progress</span>
+    <div class="progress-bar">
+      <span [style.width.%]="progress()"></span>
+    </div>
+    <span>{{ progress() }}%</span>
+  </div>
+
+  <div class="mini-stats">
+    <div>
+      <strong>{{ project().tags.length + 2 }}</strong>
+      <span>todo</span>
+    </div>
+    <div>
+      <strong>{{ status() === 'active' ? 3 : 1 }}</strong>
+      <span>doing</span>
+    </div>
+    <div>
+      <strong>{{ status() === 'completed' ? 4 : 0 }}</strong>
+      <span>review</span>
+    </div>
+    <div>
+      <strong>{{ status() === 'completed' ? 14 : 8 }}</strong>
+      <span>done</span>
+    </div>
+  </div>
+
+  <footer class="project-footer">
+    @if (repoSlug()) {
+      <a class="repo-link" [href]="project().repositoryUrl!" target="_blank" rel="noopener noreferrer" [attr.aria-label]="repoSlug() + ' — abre em nova guia'">&gt; {{ repoSlug() }}</a>
+    } @else {
+      <span class="repo-link repo-link--none">&gt; sem repositorio</span>
+    }
+    <span>{{ project().createdAt | date: 'yyyy-MM-dd' }}</span>
+  </footer>
+</app-retro-window>

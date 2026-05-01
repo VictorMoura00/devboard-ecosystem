@@ -1,0 +1,37 @@
+<div
+  class="input-shell"
+  [class.input-shell--sm]="size() === 'sm'"
+  [class.input-shell--lg]="size() === 'lg'"
+  [class.input-shell--invalid]="invalid()"
+  [class.input-shell--disabled]="disabled() || _cvaDisabled()"
+  [class.input-shell--readonly]="readonly()"
+>
+  @if (prefix()) {
+    <span class="input-prefix">{{ prefix() }}</span>
+  }
+
+  <input
+    #inputEl
+    class="input-field"
+    [type]="type()"
+    [value]="_value()"
+    [placeholder]="placeholder()"
+    [attr.aria-label]="ariaLabel() || null"
+    [disabled]="disabled() || _cvaDisabled()"
+    [attr.readonly]="readonly() ? '' : null"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />
+
+  @if (showClear()) {
+    <button type="button" class="input-clear" (click)="onClear()" aria-label="Limpar">×</button>
+  } @else if (suffix()) {
+    <span class="input-suffix">{{ suffix() }}</span>
+  }
+</div>
+
+@if (invalid() && errorMessage()) {
+  <div class="input-error" role="alert">› {{ errorMessage() }}</div>
+} @else if (helpText()) {
+  <div class="input-help">{{ helpText() }}</div>
+}

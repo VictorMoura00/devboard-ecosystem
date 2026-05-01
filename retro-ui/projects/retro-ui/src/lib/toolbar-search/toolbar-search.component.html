@@ -1,0 +1,10 @@
+<app-retro-input
+  type="search"
+  prefix="$"
+  [value]="value()"
+  [placeholder]="placeholder()"
+  [fullWidth]="true"
+  [clearable]="true"
+  (valueChange)="valueChange.emit($event)"
+  (cleared)="cleared.emit()"
+/>

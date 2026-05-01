@@ -1,0 +1,47 @@
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--line);
+  background: var(--panel-alt);
+  color: var(--line);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+// ── Sizes ──────────────────────────────────────────────────────────────────
+
+.status-pill--sm {
+  padding: 1px 7px;
+  font-size: 0.66rem;
+}
+
+.status-pill--md {
+  padding: 3px 10px;
+  font-size: 0.76rem;
+}
+
+// ── Status variants ────────────────────────────────────────────────────────
+
+.status-pill--active {
+  background: var(--phosphor);
+}
+
+.status-pill--paused {
+  background: var(--amber-bright);
+}
+
+.status-pill--completed {
+  background: var(--phosphor);
+  color: #030d03;
+}
+
+.status-pill--archived {
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+.status-pill--cursando {
+  background: color-mix(in srgb, var(--amber) 28%, var(--panel-alt));
+  color: color-mix(in srgb, var(--amber) 90%, var(--line));
+}

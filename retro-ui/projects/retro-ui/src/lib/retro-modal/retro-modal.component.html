@@ -1,0 +1,27 @@
+@if (open()) {
+  <div class="retro-modal-backdrop" (click)="onBackdropClick()">
+    <section #modalWindow class="retro-modal-window" [attr.data-size]="size()" tabindex="-1" (click)="onWindowClick($event)">
+      <header class="retro-modal-titlebar">
+        <span class="retro-modal-mark"></span>
+        <span>{{ title() }}</span>
+        @if (subtitle()) {
+          <span class="retro-modal-subtitle">{{ subtitle() }}</span>
+        }
+        <span class="retro-modal-fill"></span>
+        @if (showCloseButton()) {
+          <button type="button" class="retro-modal-titlebar-button" (click)="closed.emit()">
+            ×
+          </button>
+        }
+      </header>
+
+      <div class="retro-modal-body">
+        <ng-content></ng-content>
+      </div>
+
+      <footer class="retro-modal-footer">
+        <ng-content select="[modal-actions]"></ng-content>
+      </footer>
+    </section>
+  </div>
+}
