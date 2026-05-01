@@ -33,7 +33,7 @@ jobs:
 
       - name: retro-ui — Test
         working-directory: retro-ui
-        run: npm test -- --run
+        run: npm test
 
       # === retro-ui-showcase ===
       - name: retro-ui-showcase — Install dependencies
@@ -46,7 +46,7 @@ jobs:
 
       - name: retro-ui-showcase — Test
         working-directory: retro-ui-showcase
-        run: npm test -- --run
+        run: npm test
 
       # === devboard ===
       - name: devboard — Install dependencies
@@ -59,7 +59,7 @@ jobs:
 
       - name: devboard — Test
         working-directory: devboard
-        run: npm test -- --run
+        run: npm test
 
       # === resume ===
       - name: resume — Install dependencies
@@ -72,4 +72,4 @@ jobs:
 
       - name: resume — Test
         working-directory: resume
-        run: npm test -- --run
+        run: npm test
