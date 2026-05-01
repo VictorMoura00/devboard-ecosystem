@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # === retro-ui (library — must be built first) ===
+      - name: retro-ui — Install dependencies
+        working-directory: retro-ui
+        run: npm ci
+
+      - name: retro-ui — Build
+        working-directory: retro-ui
+        run: npm run build
+
+      - name: retro-ui — Test
+        working-directory: retro-ui
+        run: npm test -- --run
+
+      # === retro-ui-showcase ===
+      - name: retro-ui-showcase — Install dependencies
+        working-directory: retro-ui-showcase
+        run: npm ci
+
+      - name: retro-ui-showcase — Build
+        working-directory: retro-ui-showcase
+        run: npm run build
+
+      - name: retro-ui-showcase — Test
+        working-directory: retro-ui-showcase
+        run: npm test -- --run
+
+      # === devboard ===
+      - name: devboard — Install dependencies
+        working-directory: devboard
+        run: npm ci
+
+      - name: devboard — Build
+        working-directory: devboard
+        run: npm run build
+
+      - name: devboard — Test
+        working-directory: devboard
+        run: npm test -- --run
+
+      # === resume ===
+      - name: resume — Install dependencies
+        working-directory: resume
+        run: npm ci
+
+      - name: resume — Build
+        working-directory: resume
+        run: npm run build
+
+      - name: resume — Test
+        working-directory: resume
+        run: npm test -- --run

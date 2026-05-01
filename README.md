@@ -12,6 +12,30 @@ Este ecossistema foi projetado para ser modular e evolutivo. Atualmente, todos o
 
 ---
 
+## Status atual
+
+**Versão:** `v0.1.0` (versão inicial planejada)
+
+Este repositório está em fase inicial de profissionalização. O CI com GitHub Actions foi configurado para validar builds e testes em pushes e pull requests para `main`. O ecossistema ainda depende de path mapping local para consumo da `retro-ui`.
+
+| Projeto | Status | Descrição |
+|---|---|---|
+| `retro-ui` | Estável inicial | Biblioteca compartilhada de componentes Angular |
+| `retro-ui-showcase` | Estável inicial | Aplicação de demonstração da biblioteca |
+| `devboard` | Em evolução | Aplicação principal do DevBoard |
+| `resume` | Em evolução | Aplicação de currículo/portfólio |
+
+---
+
+## Limitações atuais
+
+- `retro-ui` ainda é consumida por path mapping local (não publicada como pacote).
+- Deploy das aplicações ainda não foi configurado.
+- Cobertura de testes ainda é inicial.
+- Publicação da biblioteca como pacote ainda está pendente.
+
+---
+
 ## Projetos
 
 | Projeto | Descrição | Tipo |
@@ -141,11 +165,16 @@ Isso permite `@use 'tokens'` nos arquivos `.scss` de cada app.
 
 ## Roadmap
 
-- [ ] Publicar `retro-ui` no npm / GitHub Packages
-- [ ] Remover path mappings locais e usar `dependencies` normais
-- [ ] Configurar CI/CD (GitHub Actions) para build e test em PRs
-- [ ] Deploy automático do showcase (GitHub Pages / Vercel)
-- [ ] Separar repositórios (opcional, após publicação do pacote)
+- [x] Configurar GitHub Actions para build e testes.
+- [ ] Publicar `retro-ui-showcase`.
+- [ ] Melhorar README com imagens, badges e visão arquitetural.
+- [ ] Preparar `retro-ui` para publicação como pacote.
+- [ ] Expandir cobertura de testes.
+- [ ] Evoluir funcionalidades do `devboard`.
+- [ ] Publicar `retro-ui` no npm / GitHub Packages.
+- [ ] Remover path mappings locais e usar `dependencies` normais.
+- [ ] Deploy automático do showcase (GitHub Pages / Vercel).
+- [ ] Separar repositórios (opcional, após publicação do pacote).
 
 ---
 
