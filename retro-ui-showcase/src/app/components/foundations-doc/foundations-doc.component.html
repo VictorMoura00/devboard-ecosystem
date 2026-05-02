@@ -1,0 +1,856 @@
+<div class="foundations-doc">
+  <div class="fd-layout">
+    <div class="fd-main">
+      @switch (foundation()) {
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- COLORS                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('colors') {
+      <header class="fd-header">
+        <h1 class="fd-title">Colors</h1>
+        <p class="fd-desc">The retro-ui palette is derived from 14 semantic tokens. Never use raw hex in components.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Token</span>
+          <span class="fd-badge">Visual System</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+           Colors in retro-ui are not picked individually. They flow from the <strong>Theme Builder</strong> contract:
+          14 primitive tokens per theme and mode, mapped to semantic aliases that components consume.
+        </p>
+        <p class="fd-paragraph">
+          This guarantees that switching from <em>classic-amber light</em> to <em>phosphor-green dark</em>
+          never breaks a component, because every color is resolved through a token.
+        </p>
+      </section>
+
+      <section class="fd-section" id="surface-colors">
+        <h2 class="fd-section-title">Surface Colors</h2>
+        <div class="fd-color-grid">
+          @for (t of colorTokens.slice(0, 4); track t.name) {
+            <div class="fd-color-card">
+              <div class="fd-color-swatch" [style.background]="'var(' + t.css + ')'"></div>
+              <div class="fd-color-info">
+                <strong>{{ t.name }}</strong>
+                <code>{{ t.css }}</code>
+                <span>{{ t.desc }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="text-colors">
+        <h2 class="fd-section-title">Text Colors</h2>
+        <div class="fd-color-grid">
+          @for (t of colorTokens.slice(4, 8); track t.name) {
+            <div class="fd-color-card">
+              <div class="fd-color-swatch fd-color-swatch--text" [style.color]="'var(' + t.css + ')'">
+                Aa
+              </div>
+              <div class="fd-color-info">
+                <strong>{{ t.name }}</strong>
+                <code>{{ t.css }}</code>
+                <span>{{ t.desc }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="accent-feedback">
+        <h2 class="fd-section-title">Accent & Feedback</h2>
+        <div class="fd-color-grid">
+          @for (t of colorTokens.slice(8); track t.name) {
+            <div class="fd-color-card">
+              <div class="fd-color-swatch" [style.background]="'var(' + t.css + ')'"></div>
+              <div class="fd-color-info">
+                <strong>{{ t.name }}</strong>
+                <code>{{ t.css }}</code>
+                <span>{{ t.desc }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="light-vs-dark">
+        <h2 class="fd-section-title">Light vs Dark</h2>
+        <p class="fd-paragraph">
+          The same semantic tokens resolve to different raw values depending on <code>data-mode</code>.
+          A component using <code>var(--panel)</code> automatically adapts without extra CSS.
+        </p>
+        <div class="fd-compare-row">
+          <div class="fd-compare-panel" style="background: var(--panel); color: var(--text); border: 2px solid var(--line);">
+            <strong>Light</strong>
+            <span>var(--panel) → warm paper</span>
+          </div>
+          <div class="fd-compare-panel" style="background: var(--panel); color: var(--text); border: 2px solid var(--line);">
+            <strong>Dark</strong>
+            <span>var(--panel) → charcoal</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Always use semantic tokens (<code>--panel</code>, <code>--text</code>) in component styles.</li>
+          <li>Never hardcode hex colors; if a new color is needed, add it to the Theme Builder contract.</li>
+          <li>Accent color should be the only "loud" color; surfaces must stay neutral.</li>
+          <li>Feedback colors (<code>--success</code>, <code>--danger</code>, <code>--info</code>) are reserved for states and messages.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Minimum contrast ratio: <strong>4.5:1</strong> for normal text, <strong>3:1</strong> for large text.</li>
+          <li>Never communicate state by color alone. Pair <code>--danger</code> with an icon and a text message.</li>
+          <li>Ensure focus rings (<code>--focus-ring</code>) are visible against both <code>--panel</code> and <code>--sunken</code>.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="relation">
+        <h2 class="fd-section-title">Relation with Components</h2>
+        <p class="fd-paragraph">
+          Every component in retro-ui consumes these tokens. <code>retro-button</code> uses <code>--accent</code> for hover,
+          <code>retro-input</code> uses <code>--input-bg</code> and <code>--line</code> for borders,
+          and <code>retro-message</code> maps severities directly to <code>--success</code>, <code>--info</code>, <code>--danger</code>.
+        </p>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TOKENS                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('tokens') {
+      <header class="fd-header">
+        <h1 class="fd-title">Tokens</h1>
+        <p class="fd-desc">The Theme Builder contract: 14 primitives, semantic mapping, and component derivation.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Token</span>
+          <span class="fd-badge">Theme</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          retro-ui uses a three-layer token architecture. Primitives are raw values, semantics are stable aliases,
+          and component tokens are local derivatives.
+        </p>
+        <div class="fd-layer-stack">
+          <div class="fd-layer">
+            <strong>1. Primitives</strong>
+            <code>--_panel, --_text, --_accent</code>
+            <span>Raw values per theme+mode. Prefixed with <code>--_</code>.</span>
+          </div>
+          <div class="fd-layer-arrow">↓</div>
+          <div class="fd-layer">
+            <strong>2. Semantic</strong>
+            <code>--panel, --text, --accent</code>
+            <span>Stable aliases used by components. Theme-agnostic.</span>
+          </div>
+          <div class="fd-layer-arrow">↓</div>
+          <div class="fd-layer">
+            <strong>3. Component</strong>
+            <code>--button-primary-bg, --button-shadow</code>
+            <span>Derived for specific patterns. Optional.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fd-section" id="primitive-semantic">
+        <h2 class="fd-section-title">Primitive → Semantic Mapping</h2>
+        <div class="fd-table-wrap">
+          <table class="fd-table">
+            <thead>
+              <tr><th>Primitive</th><th>Semantic</th><th>Usage</th></tr>
+            </thead>
+            <tbody>
+              @for (row of semanticTokensTable; track row.primitive) {
+                <tr>
+                  <td><code>{{ row.primitive }}</code></td>
+                  <td><code>{{ row.semantic }}</code></td>
+                  <td>{{ row.usage }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="fd-section" id="legacy-aliases">
+        <h2 class="fd-section-title">Legacy Aliases</h2>
+        <p class="fd-paragraph">
+          For backwards compatibility, these aliases still work and point to the new semantic tokens:
+        </p>
+        <div class="fd-code-block">
+<pre>--amber        → var(--accent)
+--amber-bright → var(--accent-brite)
+--phosphor     → var(--success)
+--cyan         → var(--info)
+--red          → var(--danger)</pre>
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Components must consume <strong>semantic</strong> tokens, never primitives.</li>
+          <li>New themes must define all <strong>14 primitives</strong> for both light and dark.</li>
+          <li>Do not create one-off tokens for a single component; prefer composition.</li>
+          <li>Light/dark mode changes values, not APIs. No component-level overrides needed.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Token consistency ensures contrast ratios are maintained across themes.</li>
+          <li>Focus tokens (<code>--focus-ring</code>) must be visible on every surface.</li>
+          <li>Disabled tokens (<code>--muted</code>) should reduce opacity to 0.5 for visual + semantic clarity.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TYPOGRAPHY                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('typography') {
+      <header class="fd-header">
+        <h1 class="fd-title">Typography</h1>
+        <p class="fd-desc">Two typefaces, one voice. Display for impact, monospace for structure.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Visual System</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          retro-ui uses a dual-font system. <strong>VT323 / IBM Plex Mono</strong> powers headings and chrome,
+          while <strong>IBM Plex Mono</strong> handles body text, code, and data. This creates a terminal-like
+          rhythm without sacrificing legibility.
+        </p>
+      </section>
+
+      <section class="fd-section" id="type-scale">
+        <h2 class="fd-section-title">Type Scale</h2>
+        <div class="fd-type-list">
+          @for (t of typeScale; track t.name) {
+            <div class="fd-type-row">
+              <div class="fd-type-sample" [style.fontSize]="t.size" [style.fontFamily]="t.family">
+                {{ t.sample }}
+              </div>
+              <div class="fd-type-meta">
+                <strong>{{ t.name }}</strong>
+                <code>{{ t.size }} / {{ t.family }}</code>
+                <span>{{ t.usage }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Avoid text smaller than <strong>10px</strong> except for decorative badges.</li>
+          <li>Use <code>--font-display</code> sparingly: page titles, section headings, chrome.</li>
+          <li>Use <code>--font-mono</code> for body, labels, code, paths, and tabular data.</li>
+          <li>Keep <code>--muted</code> text above 4.5:1 contrast against its background.</li>
+          <li>Uppercase is reserved for labels, badges, and short headings. Avoid in long paragraphs.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Line height for body text should be at least <strong>1.5</strong> for readability.</li>
+          <li>Letter-spacing on small uppercase labels improves recognition.</li>
+          <li>Do not use font-weight alone to convey state; pair with color or icon.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SPACING                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('spacing') {
+      <header class="fd-header">
+        <h1 class="fd-title">Spacing</h1>
+        <p class="fd-desc">A fixed scale for consistent rhythm across all components.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Layout</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          Spacing in retro-ui is not arbitrary. The scale grows by roughly 1.5× after the first steps,
+          creating a predictable rhythm for padding, gaps, and margins.
+        </p>
+      </section>
+
+      <section class="fd-section" id="spacing-scale">
+        <h2 class="fd-section-title">Spacing Scale</h2>
+        <div class="fd-spacing-list">
+          @for (s of spacingScale; track s.name) {
+            <div class="fd-spacing-row">
+              <code class="fd-spacing-name">{{ s.name }}</code>
+              <div class="fd-spacing-bar" [style.width.px]="s.px * 3" [style.height.px]="12"></div>
+              <span class="fd-spacing-value">{{ s.px }}px</span>
+              <span class="fd-spacing-desc">{{ s.desc }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Always use the token scale; avoid magic numbers like <code>padding: 7px</code>.</li>
+          <li>Interactive elements need a minimum <strong>44×44px</strong> touch target area.</li>
+          <li>Group related controls with <code>--space-2</code> to <code>--space-4</code> gaps.</li>
+          <li>Separate sections with <code>--space-6</code> to <code>--space-10</code>.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Adequate spacing prevents accidental activation of adjacent controls.</li>
+          <li>Maintain visual grouping so screen-reader users can infer relationships.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- BORDERS                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('borders') {
+      <header class="fd-header">
+        <h1 class="fd-title">Borders</h1>
+        <p class="fd-desc">Crisp edges that define structure. Borders are not decoration; they are information.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Visual System</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          In a retro terminal aesthetic, borders carry meaning. A 2px solid line separates panels,
+          a 1px dashed line indicates a subtle divider, and a 3px left border marks a selected item.
+        </p>
+      </section>
+
+      <section class="fd-section" id="border-widths">
+        <h2 class="fd-section-title">Border Widths</h2>
+        <div class="fd-border-demo">
+          <div class="fd-border-item">
+            <div style="border: 1px solid var(--line-soft); padding: 8px;">1px — subtle</div>
+            <span>dashed dividers, separators</span>
+          </div>
+          <div class="fd-border-item">
+            <div style="border: 2px solid var(--line); padding: 8px;">2px — default</div>
+            <span>cards, panels, inputs</span>
+          </div>
+          <div class="fd-border-item">
+            <div style="border: 3px solid var(--accent); padding: 8px;">3px — emphasis</div>
+            <span>selected state, focus border</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fd-section" id="border-radius">
+        <h2 class="fd-section-title">Border Radius</h2>
+        <div class="fd-radius-list">
+          @for (r of radiusScale; track r.name) {
+            <div class="fd-radius-item">
+              <div class="fd-radius-box" [style.borderRadius]="r.value"></div>
+              <code>{{ r.name }}</code>
+              <span>{{ r.value }} — {{ r.desc }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Always pair borders with adequate padding; a 2px border needs at least 8px inside.</li>
+          <li>Use <code>--line-soft</code> for dividers that should not compete with content.</li>
+          <li>Focus outlines must differ visually from resting borders (color, width, or offset).</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Focus indicators must have at least 2px thickness and sufficient contrast.</li>
+          <li>Do not remove outline without providing a custom focus ring via <code>--focus-ring</code>.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SHADOWS                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('shadows') {
+      <header class="fd-header">
+        <h1 class="fd-title">Shadows</h1>
+        <p class="fd-desc">Offset shadows for pixel-perfect depth. No blur, just crisp elevation.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Visual System</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          retro-ui shadows are deliberately retro: hard offsets with zero blur.
+          They mimic the flat depth of old GUIs and terminals, reinforcing hierarchy without noise.
+        </p>
+      </section>
+
+      <section class="fd-section" id="shadow-tokens">
+        <h2 class="fd-section-title">Shadow Tokens</h2>
+        <div class="fd-shadow-list">
+          @for (s of shadowTokens; track s.name) {
+            <div class="fd-shadow-item">
+              <div class="fd-shadow-box" [style.boxShadow]="'var(' + s.name + ')'"></div>
+              <code>{{ s.name }}</code>
+              <span>{{ s.desc }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="elevation-usage">
+        <h2 class="fd-section-title">Elevation Usage</h2>
+        <div class="fd-elevation-grid">
+          <div class="fd-elevation-card" style="box-shadow: none; border: 2px solid var(--line);">
+            <strong>Flat</strong>
+            <span>No shadow — default panel</span>
+          </div>
+          <div class="fd-elevation-card" style="box-shadow: var(--shadow-sm); border: 2px solid var(--line);">
+            <strong>Raised</strong>
+            <span>--shadow-sm — buttons, tags</span>
+          </div>
+          <div class="fd-elevation-card" style="box-shadow: var(--shadow-md); border: 2px solid var(--line);">
+            <strong>Elevated</strong>
+            <span>--shadow-md — cards, inputs</span>
+          </div>
+          <div class="fd-elevation-card" style="box-shadow: var(--shadow-lg); border: 2px solid var(--line);">
+            <strong>Floating</strong>
+            <span>--shadow-lg — modals, toasts</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Shadows reinforce hierarchy; do not use them as the sole separator between elements.</li>
+          <li>In dark mode, combine shadow with border so the depth remains visible.</li>
+          <li>Modals and toasts always use <code>--shadow-lg</code> to sit above the page.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STATES                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('states') {
+      <header class="fd-header">
+        <h1 class="fd-title">States</h1>
+        <p class="fd-desc">Every interactive element must communicate its state clearly.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Visual System</span>
+          <span class="fd-badge">A11y</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          States are not visual flourishes. They are functional signals that tell the user what is
+          clickable, what is selected, and what is blocked. Every state has a token and a semantic rule.
+        </p>
+      </section>
+
+      <section class="fd-section" id="state-reference">
+        <h2 class="fd-section-title">State Reference</h2>
+        <div class="fd-state-grid">
+          @for (s of stateList; track s.name) {
+            <div class="fd-state-card">
+              <strong>{{ s.name }}</strong>
+              <code>{{ s.token }}</code>
+              <p>{{ s.desc }}</p>
+              <span class="fd-state-note">{{ s.note }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Error must always include a text message; never rely on red color alone.</li>
+          <li>Disabled elements must use <code>pointer-events: none</code> and reduce opacity to 0.5.</li>
+          <li>Loading should use a skeleton or spinner, not just a color change.</li>
+          <li>Selected and hover must be visually distinct from each other.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="accessibility">
+        <h2 class="fd-section-title">Accessibility</h2>
+        <ul class="fd-list">
+          <li>Focus must be visible and distinct from hover.</li>
+          <li>Use <code>:focus-visible</code> instead of <code>:focus</code> to avoid outlines on mouse click.</li>
+          <li>Disabled controls must be removed from tab order or have <code>tabindex="-1"</code>.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- THEME & MODE                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('theme') {
+      <header class="fd-header">
+        <h1 class="fd-title">Theme &amp; Mode</h1>
+        <p class="fd-desc">Theme is identity. Mode is luminosity. Accent is emphasis. Three independent dimensions.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Token</span>
+          <span class="fd-badge">Theme</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          retro-ui separates visual identity from brightness. A <strong>theme</strong> defines the palette
+          (classic-amber, phosphor-green, synthwave…). A <strong>mode</strong> defines whether that palette
+          is rendered light or dark. An <strong>accent</strong> defines the highlight color.
+        </p>
+      </section>
+
+      <section class="fd-section" id="available-themes">
+        <h2 class="fd-section-title">Available Themes</h2>
+        <div class="fd-theme-grid">
+          @for (t of themes; track t.name) {
+            <div class="fd-theme-card">
+              <strong>{{ t.label }}</strong>
+              <code>{{ t.name }}</code>
+              <span>{{ t.identity }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="theme-builder-contract">
+        <h2 class="fd-section-title">Theme Builder Contract</h2>
+        <p class="fd-paragraph">
+          Every theme must define <strong>14 primitive tokens</strong> for both light and dark modes.
+          The semantic mapping is generic and shared.
+        </p>
+        <div class="fd-code-block">
+<pre>/* Surfaces */
+--_desktop      /* page background */
+--_panel        /* panel / card background */
+--_panel-alt    /* alternate panel background */
+--_sunken       /* recessed surface background */
+
+/* Structure */
+--_line         /* borders and structural lines */
+--_line-soft    /* subtle dividers */
+
+/* Text */
+--_text         /* primary text */
+--_muted        /* secondary / disabled text */
+
+/* Form */
+--_input-bg     /* form field background */
+
+/* Accent palette */
+--_accent       /* emphasis / highlight / interactive focus */
+--_accent-brite /* bright accent (hover, active) */
+--_success      /* positive / success */
+--_info         /* informational */
+--_danger       /* error / danger */</pre>
+        </div>
+      </section>
+
+      <section class="fd-section" id="html-attributes">
+        <h2 class="fd-section-title">HTML Attributes</h2>
+        <p class="fd-paragraph">
+          ThemeService writes three attributes to the <code>&lt;html&gt;</code> element:
+        </p>
+        <div class="fd-code-block">
+<pre>&lt;html data-theme="classic-amber" data-mode="dark" data-accent="green"&gt;</pre>
+        </div>
+        <ul class="fd-list">
+          <li><code>data-theme</code> switches the palette identity.</li>
+          <li><code>data-mode</code> switches between light and dark surfaces.</li>
+          <li><code>data-accent</code> overrides the highlight color (amber, green, cyan).</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>Changing mode does not change theme, and vice versa.</li>
+          <li>Components consume semantic tokens; they never know which theme is active.</li>
+          <li>New themes must pass contrast checks for both light and dark variants.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ACCESSIBILITY                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('a11y') {
+      <header class="fd-header">
+        <h1 class="fd-title">Accessibility</h1>
+        <p class="fd-desc">retro-ui is built to be usable by everyone. Accessibility is a requirement, not a step.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">A11y</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          The retro aesthetic is never an excuse for poor accessibility.
+          Every component must be keyboard-navigable, screen-reader friendly, and visually contrasted.
+        </p>
+      </section>
+
+      <section class="fd-section" id="contrast">
+        <h2 class="fd-section-title">Contrast</h2>
+        <ul class="fd-list">
+          <li>Normal text: minimum <strong>4.5:1</strong> against background.</li>
+          <li>Large text (18px+ or 14px bold): minimum <strong>3:1</strong>.</li>
+          <li>UI components and graphical objects: minimum <strong>3:1</strong>.</li>
+          <li>Focus indicators: minimum <strong>3:1</strong> against adjacent colors.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="keyboard-navigation">
+        <h2 class="fd-section-title">Keyboard Navigation</h2>
+        <ul class="fd-list">
+          <li><strong>Tab</strong> moves focus to the next interactive element.</li>
+          <li><strong>Shift + Tab</strong> moves focus backwards.</li>
+          <li><strong>Enter / Space</strong> activates buttons, toggles checkboxes, opens selects.</li>
+          <li><strong>Escape</strong> closes modals, dropdowns, and cancels operations.</li>
+          <li><strong>Arrow keys</strong> navigate within menus, tabs, segmented controls, and sliders.</li>
+          <li><strong>Home / End</strong> jump to first/last item in lists and tabs.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="screen-readers">
+        <h2 class="fd-section-title">Screen Readers</h2>
+        <ul class="fd-list">
+          <li>All form controls have associated labels.</li>
+          <li>Dynamic content updates use <code>aria-live</code> regions (toasts, notifications).</li>
+          <li>Icons that convey meaning have <code>aria-label</code> or are hidden with <code>aria-hidden="true"</code>.</li>
+          <li>Modals trap focus and restore it on close.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section">
+        <h2 class="fd-section-title">Motion &amp; Animation</h2>
+        <ul class="fd-list">
+          <li>Respect <code>prefers-reduced-motion</code>. Disable non-essential animations for users who request it.</li>
+          <li>Loading skeletons and spinners are acceptable; avoid auto-playing motion that cannot be paused.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="do-not-rely-on-color">
+        <h2 class="fd-section-title">Do Not Rely on Color Alone</h2>
+        <ul class="fd-list">
+          <li>Error states include text and an icon, not just <code>--danger</code> color.</li>
+          <li>Success states include text and an icon, not just <code>--success</code> color.</li>
+          <li>Selected tabs use border + background + text weight, not just color.</li>
+        </ul>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MOTION                                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('motion') {
+      <header class="fd-header">
+        <h1 class="fd-title">Motion</h1>
+        <p class="fd-desc">Purposeful, restrained animation. Every transition must earn its place.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Motion</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          Motion in retro-ui is minimal and functional. Animations guide attention, confirm actions,
+          and smooth state changes — but never distract or delay.
+        </p>
+      </section>
+
+      <section class="fd-section" id="transition-tokens">
+        <h2 class="fd-section-title">Transition Tokens</h2>
+        <div class="fd-motion-list">
+          @for (m of motionTokens; track m.name) {
+            <div class="fd-motion-row">
+              <code>{{ m.name }}</code>
+              <span>{{ m.value }}</span>
+              <span>{{ m.desc }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="motion-principles">
+        <h2 class="fd-section-title">Motion Principles</h2>
+        <ul class="fd-list">
+          <li><strong>Fast feedback:</strong> Hover and active states respond in under 100ms.</li>
+          <li><strong>Predictable paths:</strong> Elements expand downward, modals fade in from center.</li>
+          <li><strong>No decorative loops:</strong> Avoid infinite animations unless they indicate live status (pulse).</li>
+          <li><strong>Respect reduced motion:</strong> Wrap transitions in <code>@media (prefers-reduced-motion: no-preference)</code>.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="common-patterns">
+        <h2 class="fd-section-title">Common Patterns</h2>
+        <div class="fd-pattern-grid">
+          <div class="fd-pattern-card">
+            <strong>Hover</strong>
+            <span>background-color transition</span>
+            <code>--transition-fast</code>
+          </div>
+          <div class="fd-pattern-card">
+            <strong>Focus</strong>
+            <span>outline appearance</span>
+            <code>--transition-fast</code>
+          </div>
+          <div class="fd-pattern-card">
+            <strong>Expand / Collapse</strong>
+            <span>max-height + opacity</span>
+            <code>--transition-slow</code>
+          </div>
+          <div class="fd-pattern-card">
+            <strong>Modal / Toast</strong>
+            <span>opacity + translateY</span>
+            <code>--transition-slow</code>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- COMPOSITION                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @case ('composition') {
+      <header class="fd-header">
+        <h1 class="fd-title">Composition</h1>
+        <p class="fd-desc">Build complex interfaces from small, focused, reusable blocks.</p>
+        <div class="fd-badges">
+          <span class="fd-badge">Foundation</span>
+          <span class="fd-badge">Composition</span>
+        </div>
+      </header>
+
+      <section class="fd-section" id="overview">
+        <h2 class="fd-section-title">Overview</h2>
+        <p class="fd-paragraph">
+          retro-ui is designed as a set of composable primitives. Instead of monolithic page-level components,
+          the library provides small blocks that applications combine to create domain-specific UI.
+        </p>
+      </section>
+
+      <section class="fd-section" id="composition-rules">
+        <h2 class="fd-section-title">Composition Rules</h2>
+        <div class="fd-rule-list">
+          @for (r of compositionRules; track r.title) {
+            <div class="fd-rule-card">
+              <strong>{{ r.title }}</strong>
+              <p>{{ r.desc }}</p>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="fd-section" id="example-card">
+        <h2 class="fd-section-title">Example: Building a Card</h2>
+        <p class="fd-paragraph">
+          A project card in an application is not a retro-ui component. It is composed from retro-ui primitives:
+        </p>
+        <div class="fd-code-block">
+<pre>&lt;retro-window title="Project" variant="default"&gt;
+  &lt;div style="display:flex;gap:var(--space-4);align-items:center"&gt;
+    &lt;retro-status-dot status="active" /&gt;
+    &lt;span style="font-family:var(--font-mono)"&gt;api-server&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;retro-tag label="v2.4.0" size="sm" /&gt;
+  &lt;retro-button variant="primary" size="sm"&gt;open&lt;/retro-button&gt;
+&lt;/retro-window&gt;</pre>
+        </div>
+        <p class="fd-paragraph">
+          The application owns the card. retro-ui owns the blocks.
+        </p>
+      </section>
+
+      <section class="fd-section" id="content-projection">
+        <h2 class="fd-section-title">Content Projection</h2>
+        <p class="fd-paragraph">
+          Prefer slots over configuration props. A window with <code>&lt;div window-footer&gt;</code>
+          is more flexible than a <code>footerText</code> input.
+        </p>
+        <ul class="fd-list">
+          <li>Use named slots for distinct regions (header, footer, actions).</li>
+          <li>Use default ng-content for the main body.</li>
+          <li>Avoid deeply nested slot trees; keep composition flat.</li>
+        </ul>
+      </section>
+
+      <section class="fd-section" id="usage-guidelines">
+        <h2 class="fd-section-title">Usage Guidelines</h2>
+        <ul class="fd-list">
+          <li>If a pattern repeats in one app, create a local component; do not add it to retro-ui.</li>
+          <li>Keep retro-ui components domain-free. No Project, Task, or Dashboard concepts.</li>
+          <li>Test composed UIs in both light and dark modes.</li>
+        </ul>
+      </section>
+    }
+
+      }
+    </div>
+    <aside class="fd-sidebar" aria-label="Foundation topics">
+      <div class="fd-sidebar-inner">
+        <div class="fd-sidebar-header">// foundation index</div>
+        <nav class="fd-sidebar-nav">
+          @for (topic of topics(); track topic.id) {
+            <a class="fd-sidebar-link" [href]="'#' + topic.id" (click)="scrollToSection($event, topic.id)">{{ topic.label }}</a>
+          }
+        </nav>
+      </div>
+    </aside>
+  </div>
+</div>

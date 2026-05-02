@@ -1,0 +1,313 @@
+<div class="component-doc">
+  <div class="cd-layout">
+    <!-- ── Main Content ─────────────────────────────────────────────────── -->
+    <div class="cd-main">
+      <!-- ── Header ───────────────────────────────────────────────────────── -->
+      <header class="cd-header" id="overview">
+        <div class="cd-header-meta">
+          <span class="cd-category">{{ config().category }}</span>
+          <h1 class="cd-title">{{ config().name }}</h1>
+          <p class="cd-desc">{{ config().description }}</p>
+          <div class="cd-badges">
+            @for (badge of config().badges; track badge) {
+              <span class="cd-badge">{{ badge }}</span>
+            }
+          </div>
+        </div>
+        <div class="cd-selector-box">
+          <code>{{ config().selector }}</code>
+        </div>
+      </header>
+
+      <!-- ── Overview ───────────────────────────────────────────────────────── -->
+      <section class="cd-section" id="description">
+        <h2 class="cd-section-title">Overview</h2>
+        <p class="cd-paragraph">{{ config().description }}</p>
+      </section>
+
+      <!-- ── Import ─────────────────────────────────────────────────────────── -->
+      <section class="cd-section" id="import">
+        <h2 class="cd-section-title">Import</h2>
+        <p class="cd-paragraph">Import the component as a standalone dependency:</p>
+        <div class="cd-code-block">
+          <retro-code [code]="config().importExample" language="typescript" [framed]="false" />
+        </div>
+      </section>
+
+      <!-- ── Basic Usage ────────────────────────────────────────────────────── -->
+      <section class="cd-section" id="basic-usage">
+        <h2 class="cd-section-title">Basic Usage</h2>
+        @if (config().basicUsage.description) {
+          <p class="cd-paragraph">{{ config().basicUsage.description }}</p>
+        }
+        <div class="cd-code-block">
+          <retro-code [code]="config().basicUsage.code" language="angular" [framed]="false" />
+        </div>
+      </section>
+
+      <!-- ── Implementation Examples ────────────────────────────────────────── -->
+      @if (config().examples.length) {
+        <section class="cd-section" id="examples">
+          <h2 class="cd-section-title">Implementation Examples</h2>
+          <div class="cd-examples">
+            @for (ex of config().examples; track ex.title) {
+              <div class="cd-example-card">
+                <h3 class="cd-example-title">{{ ex.title }}</h3>
+                @if (ex.description) {
+                  <p class="cd-example-desc">{{ ex.description }}</p>
+                }
+                <div class="cd-code-block">
+                  <retro-code [code]="ex.code" language="angular" [framed]="false" />
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Variants ───────────────────────────────────────────────────────── -->
+      @if (config().variants.length) {
+        <section class="cd-section" id="variants">
+          <h2 class="cd-section-title">Variants</h2>
+          <div class="cd-variant-list">
+            @for (v of config().variants; track v.name) {
+              <div class="cd-variant-item">
+                <strong>{{ v.name }}</strong>
+                <span>{{ v.description }}</span>
+                @if (v.code) {
+                  <div class="cd-code-block--small">
+                    <retro-code [code]="v.code" language="angular" [framed]="false" />
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── States ─────────────────────────────────────────────────────────── -->
+      @if (config().states.length) {
+        <section class="cd-section" id="states">
+          <h2 class="cd-section-title">States</h2>
+          <div class="cd-state-grid">
+            @for (s of config().states; track s.name) {
+              <div class="cd-state-card">
+                <strong>{{ s.name }}</strong>
+                <p>{{ s.description }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Forms / CVA ────────────────────────────────────────────────────── -->
+      @if (config().formsCva) {
+        <section class="cd-section" id="forms-cva">
+          <h2 class="cd-section-title">Forms / CVA</h2>
+          <p class="cd-paragraph">{{ config().formsCva!.description }}</p>
+          <div class="cd-code-block">
+            <retro-code [code]="config().formsCva!.code" language="angular" [framed]="false" />
+          </div>
+        </section>
+      }
+
+      <!-- ── Accessibility ──────────────────────────────────────────────────── -->
+      <section class="cd-section" id="accessibility">
+        <h2 class="cd-section-title">Accessibility</h2>
+        <ul class="cd-list">
+          @for (item of config().accessibility; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </section>
+
+      <!-- ── API Reference ──────────────────────────────────────────────────── -->
+      <section class="cd-section" id="api-reference">
+        <h2 class="cd-section-title">API Reference</h2>
+
+        @if (config().api.inputs?.length) {
+          <div class="cd-api-block">
+            <h3 class="cd-api-subtitle">Inputs</h3>
+            <div class="cd-table-wrap">
+              <table class="cd-table">
+                <thead>
+                  <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  @for (row of config().api.inputs; track row.name) {
+                    <tr>
+                      <td><code>{{ row.name }}</code>@if (row.required) { <span class="cd-required">*</span> }</td>
+                      <td><code>{{ row.type }}</code></td>
+                      <td>{{ row.default ?? '—' }}</td>
+                      <td>{{ row.desc }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (config().api.outputs?.length) {
+          <div class="cd-api-block">
+            <h3 class="cd-api-subtitle">Outputs</h3>
+            <div class="cd-table-wrap">
+              <table class="cd-table">
+                <thead>
+                  <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  @for (row of config().api.outputs; track row.name) {
+                    <tr>
+                      <td><code>{{ row.name }}</code></td>
+                      <td><code>{{ row.type }}</code></td>
+                      <td>{{ row.desc }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (config().api.methods?.length) {
+          <div class="cd-api-block">
+            <h3 class="cd-api-subtitle">Methods</h3>
+            <div class="cd-table-wrap">
+              <table class="cd-table">
+                <thead>
+                  <tr><th>Name</th><th>Signature</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  @for (row of config().api.methods; track row.name) {
+                    <tr>
+                      <td><code>{{ row.name }}</code></td>
+                      <td><code>{{ row.type }}</code></td>
+                      <td>{{ row.desc }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (config().api.slots?.length) {
+          <div class="cd-api-block">
+            <h3 class="cd-api-subtitle">Slots</h3>
+            <div class="cd-table-wrap">
+              <table class="cd-table">
+                <thead>
+                  <tr><th>Name</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  @for (row of config().api.slots; track row.name) {
+                    <tr>
+                      <td><code>{{ row.name }}</code></td>
+                      <td>{{ row.desc }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (config().api.cva?.length) {
+          <div class="cd-api-block">
+            <h3 class="cd-api-subtitle">CVA</h3>
+            <p class="cd-paragraph">This component implements <code>ControlValueAccessor</code> and supports <code>ngModel</code> / reactive forms.</p>
+            <div class="cd-cva-list">
+              @for (item of config().api.cva; track item) {
+                <code>{{ item }}</code>
+              }
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- ── Customization ──────────────────────────────────────────────────── -->
+      <section class="cd-section" id="customization">
+        <h2 class="cd-section-title">Customization</h2>
+        <ul class="cd-list">
+          @for (item of config().customization; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+        @if (config().relatedTokens?.length) {
+          <div class="cd-token-list">
+            <strong>Related tokens:</strong>
+            @for (token of config().relatedTokens; track token) {
+              <code>{{ token }}</code>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- ── Best Practices ─────────────────────────────────────────────────── -->
+      <section class="cd-section" id="best-practices">
+        <h2 class="cd-section-title">Best Practices</h2>
+        <div class="cd-practice-grid">
+          <div class="cd-practice-col">
+            <h3 class="cd-practice-title cd-practice-title--do">Do</h3>
+            <ul class="cd-list">
+              @for (item of config().bestPractices.do; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+          <div class="cd-practice-col">
+            <h3 class="cd-practice-title cd-practice-title--dont">Don't</h3>
+            <ul class="cd-list">
+              @for (item of config().bestPractices.dont; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Interactive Demo ───────────────────────────────────────────────── -->
+      @if (demoRef()) {
+        <section class="cd-section cd-section--demo" id="interactive-demo">
+          <h2 class="cd-section-title">Interactive Demo</h2>
+          <p class="cd-paragraph">Use the controls below to explore states, variants, and properties in real time.</p>
+          <div class="cd-demo-box">
+            <ng-container *ngTemplateOutlet="demoRef()!" />
+          </div>
+        </section>
+      }
+    </div>
+
+    <!-- ── Sidebar Navigation ─────────────────────────────────────────────── -->
+    <aside class="cd-sidebar" aria-label="Page topics">
+      <div class="cd-sidebar-inner">
+        <div class="cd-sidebar-header">// page index</div>
+        <nav class="cd-sidebar-nav">
+          <a class="cd-sidebar-link" href="#overview" (click)="scrollToSection($event, 'overview')">Overview</a>
+          <a class="cd-sidebar-link" href="#import" (click)="scrollToSection($event, 'import')">Import</a>
+          <a class="cd-sidebar-link" href="#basic-usage" (click)="scrollToSection($event, 'basic-usage')">Basic Usage</a>
+          @if (config().examples.length) {
+            <a class="cd-sidebar-link" href="#examples" (click)="scrollToSection($event, 'examples')">Examples</a>
+          }
+          @if (config().variants.length) {
+            <a class="cd-sidebar-link" href="#variants" (click)="scrollToSection($event, 'variants')">Variants</a>
+          }
+          @if (config().states.length) {
+            <a class="cd-sidebar-link" href="#states" (click)="scrollToSection($event, 'states')">States</a>
+          }
+          @if (config().formsCva) {
+            <a class="cd-sidebar-link" href="#forms-cva" (click)="scrollToSection($event, 'forms-cva')">Forms / CVA</a>
+          }
+          <a class="cd-sidebar-link" href="#accessibility" (click)="scrollToSection($event, 'accessibility')">Accessibility</a>
+          <a class="cd-sidebar-link" href="#api-reference" (click)="scrollToSection($event, 'api-reference')">API Reference</a>
+          <a class="cd-sidebar-link" href="#customization" (click)="scrollToSection($event, 'customization')">Customization</a>
+          <a class="cd-sidebar-link" href="#best-practices" (click)="scrollToSection($event, 'best-practices')">Best Practices</a>
+          @if (demoRef()) {
+            <a class="cd-sidebar-link" href="#interactive-demo" (click)="scrollToSection($event, 'interactive-demo')">Interactive Demo</a>
+          }
+        </nav>
+      </div>
+    </aside>
+  </div>
+</div>

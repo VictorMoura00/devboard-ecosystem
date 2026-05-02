@@ -113,7 +113,14 @@
     <div class="lib-breadcrumb-meta">{{ activeStoryPath() }}</div>
   </div>
 
-  <retro-window [title]="activeStoryTitle()" [subtitle]="activeStoryHint()" padding="none">
+  @if (hasComponentDoc()) {
+    <app-component-doc [config]="componentDocConfig()!" />
+  }
+
+  @if (isFoundation()) {
+    <app-foundations-doc [foundation]="activeFoundationId()!" />
+  } @else {
+    <retro-window [title]="activeStoryTitle()" [subtitle]="activeStoryHint()" padding="none">
     <div class="story-body" [class.story-body--fullscreen]="previewFullscreen()">
       <div class="story-left">
         <retro-collapsible
@@ -193,6 +200,40 @@
             [class.story-canvas--code]="activeTab() === 'code'"
           >
           @switch (activeStory()) {
+
+            @case ('foundations-colors') {
+              <app-foundations-doc foundation="colors" />
+            }
+            @case ('foundations-tokens') {
+              <app-foundations-doc foundation="tokens" />
+            }
+            @case ('foundations-typography') {
+              <app-foundations-doc foundation="typography" />
+            }
+            @case ('foundations-spacing') {
+              <app-foundations-doc foundation="spacing" />
+            }
+            @case ('foundations-borders') {
+              <app-foundations-doc foundation="borders" />
+            }
+            @case ('foundations-shadows') {
+              <app-foundations-doc foundation="shadows" />
+            }
+            @case ('foundations-states') {
+              <app-foundations-doc foundation="states" />
+            }
+            @case ('foundations-theme') {
+              <app-foundations-doc foundation="theme" />
+            }
+            @case ('foundations-a11y') {
+              <app-foundations-doc foundation="a11y" />
+            }
+            @case ('foundations-motion') {
+              <app-foundations-doc foundation="motion" />
+            }
+            @case ('foundations-composition') {
+              <app-foundations-doc foundation="composition" />
+            }
 
             @case ('win') {
               @if (activeTab() === 'preview') {
@@ -1745,8 +1786,9 @@ this.term.clear();"
       }
     </div>
   </retro-window>
+  }
 
-  @if (!previewFullscreen()) {
+  @if (!previewFullscreen() && !hasComponentDoc() && !isFoundation()) {
   <section class="docs-section">
     <div class="docs-section-header">
       <div>

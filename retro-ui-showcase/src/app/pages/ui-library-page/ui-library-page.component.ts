@@ -66,6 +66,9 @@ import {
   RetroSectionComponent,
   RetroTab,
 } from '@retro-ui';
+import { FoundationsDocComponent, FoundationId } from '../../components/foundations-doc/foundations-doc.component';
+import { ComponentDocComponent } from '../../components/component-doc/component-doc.component';
+import { COMPONENT_DOCS } from '../../components/component-docs';
 import type { TerminalCommand, TerminalLineType } from '@retro-ui';
 import { RetroButtonIconPos, RetroButtonTone, RetroButtonVariant } from '@retro-ui';
 import { RetroCheckboxSize } from '@retro-ui';
@@ -84,6 +87,7 @@ type StoryId =
   | 'foundations-colors' | 'foundations-tokens' | 'foundations-typography'
   | 'foundations-spacing' | 'foundations-borders' | 'foundations-shadows'
   | 'foundations-states' | 'foundations-theme' | 'foundations-a11y'
+  | 'foundations-motion' | 'foundations-composition'
   | 'win' | 'button' | 'input' | 'select' | 'range' | 'checkbox' | 'kbd'
   | 'pill' | 'dot' | 'tag' | 'stat'
   | 'progress' | 'ascii' | 'toast' | 'message' | 'skeleton'
@@ -174,6 +178,8 @@ interface ComponentDoc {
     ApiTableComponent,
     RetroTabsComponent,
     RetroSectionComponent,
+    FoundationsDocComponent,
+    ComponentDocComponent,
   ],
   templateUrl: './ui-library-page.component.html',
   styleUrl: './ui-library-page.component.scss',
@@ -194,22 +200,22 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly displayMode  = this.themeService.displayMode;
   protected readonly accent       = this.themeService.accent;
   protected readonly isDark       = this.themeService.isDark;
-  protected readonly themeOptions = (() => {
-    const opts: { label: string; value: string; separator?: boolean }[] = [];
-    let hadDark = false;
-    for (const theme of APP_THEMES) {
-      if (theme.mode === 'dark' && !hadDark) {
-        opts.push({ label: '', value: '__sep__', separator: true });
-        hadDark = true;
-      }
-      opts.push({ label: theme.label, value: theme.name });
-    }
-    return opts;
-  })();
+  protected readonly themeOptions = APP_THEMES.map(t => ({ label: t.label, value: t.name }));
   protected readonly modeOptions: { label: string; value: DisplayMode; icon: string }[] = [
     { label: 'Light', value: 'light', icon: '☀' },
     { label: 'Dark', value: 'dark', icon: '☾' },
   ];
+  protected readonly COMPONENT_DOCS = COMPONENT_DOCS;
+  protected readonly componentDocKeys = Object.keys(COMPONENT_DOCS);
+  protected readonly hasComponentDoc = computed(() => this.componentDocKeys.includes(this.activeStory()));
+  protected readonly componentDocConfig = computed(() => this.COMPONENT_DOCS[this.activeStory()]);
+
+  protected readonly isFoundation = computed(() => this.activeStory().startsWith('foundations-'));
+  protected readonly activeFoundationId = computed(() => {
+    const story = this.activeStory();
+    return story.startsWith('foundations-') ? story.replace('foundations-', '') as FoundationId : null;
+  });
+
   protected readonly accentOptions: { label: string; value: RetroAccent }[] = [
     { label: 'Amber', value: 'amber' },
     { label: 'Green', value: 'green' },
@@ -224,11 +230,11 @@ export class UiLibraryPageComponent implements OnInit {
   // ── Foundations data ────────────────────────────────────────────────────
 
   protected readonly colorSwatches = [
-    { name: 'amber', value: '#ffb000' },
-    { name: 'amber-bright', value: '#ffd166' },
-    { name: 'phosphor', value: '#33ff66' },
-    { name: 'cyan', value: '#00d3ff' },
-    { name: 'red', value: '#ff4136' },
+    { name: 'accent', value: '#ffb000' },
+    { name: 'accent-brite', value: '#ffd166' },
+    { name: 'success', value: '#33ff66' },
+    { name: 'info', value: '#00d3ff' },
+    { name: 'danger', value: '#ff4136' },
     { name: 'line', value: '#1a1a18' },
     { name: 'line-soft', value: '#8f8a7a' },
     { name: 'text', value: '#1a1a18' },
@@ -248,11 +254,11 @@ export class UiLibraryPageComponent implements OnInit {
     { name: 'panel-alt', cssVar: '--panel-alt' },
     { name: 'sunken', cssVar: '--sunken' },
     { name: 'desktop', cssVar: '--desktop' },
-    { name: 'amber', cssVar: '--amber' },
-    { name: 'amber-bright', cssVar: '--amber-bright' },
-    { name: 'phosphor', cssVar: '--phosphor' },
-    { name: 'cyan', cssVar: '--cyan' },
-    { name: 'red', cssVar: '--red' },
+    { name: 'accent', cssVar: '--accent' },
+    { name: 'accent-brite', cssVar: '--accent-brite' },
+    { name: 'success', cssVar: '--success' },
+    { name: 'info', cssVar: '--info' },
+    { name: 'danger', cssVar: '--danger' },
     { name: 'focus-ring', cssVar: '--focus-ring' },
     { name: 'input-bg', cssVar: '--input-bg' },
   ];
@@ -282,34 +288,64 @@ export class UiLibraryPageComponent implements OnInit {
 
 ## Architecture
 
-retro-ui uses a three-layer token system:
+retro-ui uses a three-layer token system based on the Theme Builder contract:
 
-1. **Primitive tokens** — raw color values per theme (\`--_amber\`, \`--_panel\`, etc.)
-2. **Semantic tokens** — mapped from primitives (\`--amber\`, \`--panel\`, etc.)
+1. **Primitive tokens** — 14 raw values per theme+mode (\`--_accent\`, \`--_panel\`, etc.)
+2. **Semantic tokens** — mapped from primitives (\`--accent\`, \`--panel\`, etc.)
 3. **Component tokens** — derived from semantics (\`--button-primary-bg\`, etc.)
 
-## Primitive palette
+## Theme Builder Contract (14 primitives)
 
-Each theme defines its own primitive values. Components never use primitives directly.
+Every theme must define these 14 tokens for both light and dark modes:
 
 \`\`\`scss
-html[data-theme='classic-amber'] {
-  --_amber:      #ffb000;
-  --_panel:      #d8d3c4;
-  --_line:       #1a1a18;
-  --_text:       #1a1a18;
-  // ...
-}
+/* Surfaces */
+--_desktop      /* page background */
+--_panel        /* panel / card background */
+--_panel-alt    /* alternate panel background */
+--_sunken       /* recessed surface background */
+
+/* Structure */
+--_line         /* borders and structural lines */
+--_line-soft    /* subtle dividers */
+
+/* Text */
+--_text         /* primary text */
+--_muted        /* secondary / disabled text */
+
+/* Form */
+--_input-bg     /* form field background */
+
+/* Accent palette */
+--_accent       /* emphasis / highlight */
+--_accent-brite /* bright accent (hover, active) */
+--_success      /* positive / success */
+--_info         /* informational */
+--_danger       /* error / danger */
+\`\`\`
+
+## Legacy Aliases
+
+For backwards compatibility, these aliases point to the new semantic tokens:
+
+\`\`\`
+--amber        → var(--accent)
+--amber-bright → var(--accent-brite)
+--phosphor     → var(--success)
+--cyan         → var(--info)
+--red          → var(--danger)
 \`\`\`
 
 ## Semantic mapping
 
-Semantic tokens are mapped from primitives. Mode (light/dark) determines the mapping:
+Semantic tokens are mapped from primitives. The mapping is generic across all themes:
 
 \`\`\`scss
-html[data-theme][data-mode='light'] {
-  --amber: var(--_amber);
-  --panel: var(--_panel);
+html[data-theme] {
+  --accent:  var(--_accent);
+  --panel:   var(--_panel);
+  --text:    var(--_text);
+  /* ... */
 }
 \`\`\`
 
@@ -338,14 +374,24 @@ Never use primitive tokens:
 
 ## Token Layers
 
-### 1. Primitives
-Raw values defined per theme. Prefixed with \`--_\`.
+### 1. Primitives (Theme Builder Contract)
+14 raw values defined per theme+mode. Prefixed with \`--_\`.
 
 \`\`\`
+/* Surfaces */
 --_desktop, --_panel, --_panel-alt, --_sunken
---_line, --_line-soft, --_text, --_muted
---_amber, --_amber-brite, --_phosphor, --_cyan, --_red
+
+/* Structure */
+--_line, --_line-soft
+
+/* Text */
+--_text, --_muted
+
+/* Form */
 --_input-bg
+
+/* Accent palette */
+--_accent, --_accent-brite, --_success, --_info, --_danger
 \`\`\`
 
 ### 2. Semantic
@@ -354,8 +400,13 @@ Mapped from primitives. Used by components.
 \`\`\`
 --desktop, --panel, --panel-alt, --sunken
 --line, --line-soft, --text, --muted
---amber, --amber-bright, --phosphor, --cyan, --red
 --input-bg, --focus-ring, --page-bg
+
+/* Accent palette */
+--accent, --accent-brite, --success, --info, --danger
+
+/* Legacy aliases */
+--amber, --amber-bright, --phosphor, --cyan, --red
 \`\`\`
 
 ### 3. Component
@@ -409,32 +460,86 @@ Derived from semantic tokens.
 --transition-slow: 300ms ease
 \`\`\``;
 
-  protected readonly themeDocCode = `# Theme & Mode
+  protected readonly themeDocCode = `# Theme Builder
 
 ## Architecture
 
-Theme and Mode are independent concepts:
+Three independent dimensions control the visual system:
 
-- **Theme** = visual identity (retro-classico)
-- **Mode** = luminosity (light | dark)
-- **Accent** = highlight color (amber | green | cyan)
+| Dimension | Values | Purpose |
+|-----------|--------|---------|
+| **Theme** | classic-amber, phosphor-green, crt-blue, synthwave, solar-sepia, old-computer | Visual identity / palette |
+| **Mode** | light, dark | Luminosity of surfaces |
+| **Accent** | amber, green, cyan | Highlight / emphasis color |
 
 \`\`\`
-Theme:  retro-classico
+Theme:  classic-amber | phosphor-green | crt-blue | synthwave | solar-sepia | old-computer
 Mode:   light | dark
 Accent: amber | green | cyan
 \`\`\`
 
-## retro-classico
+## Theme Matrix
 
-The default retro theme. It supports both light and dark modes:
+Every theme supports both light and dark modes:
 
-| Mode | Background | Panels | Text | Accent |
-|------|------------|--------|------|--------|
-| light | warm paper (#c9c3b2) | parchment (#d8d3c4) | graphite (#1a1a18) | amber (#ffb000) |
-| dark | charcoal (#0d1009) | deep green-black (#141810) | warm ivory (#d8d0b8) | amber (#ffb000) |
+| Theme | Light identity | Dark identity |
+|-------|---------------|---------------|
+| classic-amber | warm paper, graphite, amber | charcoal, ivory, amber |
+| phosphor-green | terminal green, dark text | black-green, phosphor glow |
+| crt-blue | cool grey-blue, navy text | deep navy, cyan glow |
+| synthwave | soft lavender, purple text | deep purple, magenta glow |
+| solar-sepia | aged paper, brown text | warm charcoal, amber glow |
+| old-computer | warm beige, olive, wood | dark olive, warm grey, amber |
 
-Other palettes (phosphor-green, crt-blue, synthwave, solar-sepia) are available as alternative identities.
+## Theme Builder Contract
+
+Every theme must define **14 primitive tokens** for both light and dark modes:
+
+\`\`\`scss
+/* Surfaces */
+--_desktop      /* page background */
+--_panel        /* panel / card background */
+--_panel-alt    /* alternate panel background */
+--_sunken       /* recessed surface background */
+
+/* Structure */
+--_line         /* borders and structural lines */
+--_line-soft    /* subtle dividers */
+
+/* Text */
+--_text         /* primary text */
+--_muted        /* secondary / disabled text */
+
+/* Form */
+--_input-bg     /* form field background */
+
+/* Accent palette */
+--_accent       /* emphasis / highlight / interactive focus */
+--_accent-brite /* bright accent (hover, active) */
+--_success      /* positive / success */
+--_info         /* informational */
+--_danger       /* error / danger */
+\`\`\`
+
+## Token Layers
+
+1. **Primitives** (\`--_panel\`, \`--_text\`) — 14 raw values per theme+mode
+2. **Semantic** (\`--panel\`, \`--text\`) — mapped from primitives
+3. **Legacy aliases** (\`--amber\`, \`--phosphor\`, \`--cyan\`, \`--red\`) — point to semantic accent tokens
+4. **Component** (\`--button-primary-bg\`) — derived from semantic
+5. **Accent** (\`--accent\`) — dynamic highlight based on data-accent
+
+## Legacy Aliases
+
+For backwards compatibility, these aliases are maintained:
+
+\`\`\`
+--amber        → var(--accent)
+--amber-bright → var(--accent-brite)
+--phosphor     → var(--success)
+--cyan         → var(--info)
+--red          → var(--danger)
+\`\`\`
 
 ## Mode Switching
 
@@ -442,7 +547,7 @@ Mode changes semantic surface tokens globally. No component-level overrides need
 
 \`\`\`typescript
 // ThemeService
-themeService.setTheme('classic-amber');
+themeService.setTheme('phosphor-green');
 themeService.setMode('dark');
 themeService.toggleMode();
 themeService.setAccent('green');
@@ -450,18 +555,14 @@ themeService.setAccent('green');
 
 \`\`\`html
 <!-- HTML attributes set by ThemeService -->
-<html data-theme="classic-amber" data-mode="dark" data-accent="amber">
+<html data-theme="phosphor-green" data-mode="dark" data-accent="green">
 \`\`\`
-
-## Token Layers
-
-1. **Primitives** (\`--_panel\`, \`--_text\`) — raw values per theme+mode
-2. **Semantic** (\`--panel\`, \`--text\`) — mapped from primitives
-3. **Component** (\`--button-primary-bg\`) — derived from semantic
 
 ## Best Practices
 
 - ✅ Use semantic tokens (\`--panel\`, \`--text\`)
+- ✅ Use \`--accent\` for emphasis instead of hardcoded \`--amber\`
+- ✅ Use \`--success\`, \`--info\`, \`--danger\` for semantic states
 - ✅ Let mode handle light/dark surfaces
 - ✅ Use \`--focus-ring\` for focus states
 - ✅ Theme and mode are separate; dark is a mode, not a theme
@@ -629,7 +730,7 @@ Every interactive component implements:
   protected readonly availableThemes = APP_THEMES.map(t => ({
     name: t.name,
     label: t.label,
-    swatches: [t.primitives.amber ?? t.primitives.phosphor ?? '#ffb000', t.primitives.panel ?? '#d8d3c4', t.primitives.line ?? '#1a1a18'],
+    swatches: [t.primitives.accent ?? t.primitives.success ?? '#ffb000', t.primitives.panel ?? '#d8d3c4', t.primitives.line ?? '#1a1a18'],
   }));
 
   protected cssVar(name: string): string {
@@ -639,7 +740,6 @@ Every interactive component implements:
   protected readonly sidebarCollapsed = signal(false);
   protected toggleSidebar(): void { this.sidebarCollapsed.update(v => !v); }
   protected readonly storySearch = signal('');
-
   protected readonly collapsedGroups = signal<Set<string>>(new Set());
   protected isGroupCollapsed(group: string): boolean { return this.collapsedGroups().has(group); }
   protected toggleGroup(group: string): void {
@@ -663,6 +763,8 @@ Every interactive component implements:
         { id: 'foundations-states',   label: 'States' },
         { id: 'foundations-theme',    label: 'Theme & Mode' },
         { id: 'foundations-a11y',     label: 'Accessibility' },
+        { id: 'foundations-motion',   label: 'Motion' },
+        { id: 'foundations-composition', label: 'Composition' },
       ],
     },
     {
@@ -741,6 +843,10 @@ Every interactive component implements:
       ],
     },
   ];
+
+  constructor() {
+    this.collapsedGroups.set(new Set(this.storyGroups.map(g => g.group)));
+  }
 
   protected readonly activeStory = signal<StoryId>('foundations-colors');
   protected readonly activeTab   = signal<StoryTab>('preview');
@@ -829,6 +935,8 @@ Every interactive component implements:
       'foundations-states':     'foundations/states.md',
       'foundations-theme':      'foundations/theme.md',
       'foundations-a11y':       'foundations/accessibility.md',
+      'foundations-motion':     'foundations/motion.md',
+      'foundations-composition':'foundations/composition.md',
       win:        'retro-window.component.ts',
       button:     'retro-button.component.ts',
       input:      'retro-input.component.ts',
@@ -877,6 +985,8 @@ Every interactive component implements:
       'foundations-states': { selector: 'design.states', summary: 'Interactive state tokens — hover, focus, active, disabled conventions.', inputs: 0, outputs: 0, slots: 0 },
       'foundations-theme': { selector: 'design.theme', summary: 'Theme architecture: primitives, semantic mapping, mode switching, and accent colors.', inputs: 0, outputs: 0, slots: 0 },
       'foundations-a11y': { selector: 'design.a11y', summary: 'Accessibility guidelines, contrast requirements, keyboard navigation patterns, and ARIA conventions.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-motion': { selector: 'design.motion', summary: 'Transition tokens, animation principles, and reduced-motion support.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-composition': { selector: 'design.composition', summary: 'Component composition patterns, content projection, and domain-free architecture.', inputs: 0, outputs: 0, slots: 0 },
       win: { selector: 'retro-window', summary: 'Janela base para shells, painéis e blocos do design system retrô.', inputs: 11, outputs: 4, slots: 3 },
       button: { selector: 'retro-button', summary: 'Botão principal da biblioteca com variantes, loading e link rendering.', inputs: 7, outputs: 1, slots: 1 },
       input: { selector: 'retro-input', summary: 'Campo de entrada retrô com prefixo, suffix, clearable e estados visuais.', inputs: 14, outputs: 2, slots: 0 },
@@ -954,6 +1064,17 @@ Every interactive component implements:
     this.activeTab.set('preview');
     this.previewFullscreen.set(false);
     this.syncUrlState();
+  });
+
+  private readonly expandActiveGroupEffect = effect(() => {
+    const activeItem = this.activeStoryItem();
+    if (!activeItem) return;
+
+    this.collapsedGroups.update(set => {
+      const next = new Set(set);
+      next.delete(activeItem.group);
+      return next;
+    });
   });
 
   // ── Terminal ──────────────────────────────────────────────────────────────
@@ -1844,7 +1965,8 @@ export class MyFeaturePage {}`;
     'foundations-states':     { badges: ['standalone'], description: 'Interactive state tokens — hover, focus, active, disabled conventions.', a11y: [], practices: [] },
     'foundations-theme':      { badges: ['standalone'], description: 'Theme architecture: retro-classico identity with light/dark modes and accent colors. Primitives, semantic mapping, and mode switching.', a11y: [], practices: [] },
     'foundations-a11y':       { badges: ['standalone'], description: 'Accessibility guidelines, contrast requirements, keyboard navigation patterns, and ARIA conventions.', a11y: [], practices: [] },
-
+    'foundations-motion':     { badges: ['standalone'], description: 'Transition tokens, animation principles, and reduced-motion support for purposeful UI motion.', a11y: [], practices: [] },
+    'foundations-composition':{ badges: ['standalone'], description: 'Component composition patterns, content projection over props, and domain-free architecture guidelines.', a11y: [], practices: [] },
     win: {
       badges: ['standalone', 'layout', 'onpush', 'composable'],
       description: 'Janela base para shells, painéis e blocos do design system retrô. Suporta variantes visuais, controles de janela, status, scroll e footer projetável.',
