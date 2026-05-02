@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { RetroInputComponent } from '../retro-input/retro-input.component';
 
 @Component({
-  selector: 'app-toolbar-search',
+  selector: 'retro-toolbar-search',
   standalone: true,
   imports: [RetroInputComponent],
   templateUrl: './toolbar-search.component.html',

@@ -10,7 +10,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
-  selector: 'app-retro-range',
+  selector: 'retro-range',
   standalone: true,
   templateUrl: './retro-range.component.html',
   styleUrl: './retro-range.component.scss',

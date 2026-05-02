@@ -53,7 +53,7 @@
   <main class="layout">
     @if (activeTab === 'projects') {
       <section class="hero-grid">
-        <app-retro-window title="~/devboard/dashboard" subtitle="projects.list" [showControls]="true">
+        <retro-window title="~/devboard/dashboard" subtitle="projects.list" [showControls]="true">
           <div class="hero-body">
             <div class="hero-copy">
               <h1>hello, victor</h1>
@@ -67,36 +67,36 @@
               </p>
             </div>
 
-            <app-retro-button variant="primary" size="md" (pressed)="openCommandModal()">
+            <retro-button variant="primary" size="md" (pressed)="openCommandModal()">
               + New Project
-            </app-retro-button>
+            </retro-button>
           </div>
-        </app-retro-window>
+        </retro-window>
 
-        <app-retro-window title="stats.json" subtitle="last 24h">
+        <retro-window title="stats.json" subtitle="last 24h">
           <div class="stats-grid">
-            <app-stat-box
+            <retro-stat-box
               label="Projects"
               [value]="totalProjects()"
               [sublabel]="activeProjects() + ' active'"
             />
-            <app-stat-box
+            <retro-stat-box
               label="Open tasks"
               [value]="openTasksEstimate()"
               sublabel="across all repos"
             />
-            <app-stat-box label="Events / 1h" [value]="47" sublabel="via rabbit" />
-            <app-stat-box
+            <retro-stat-box label="Events / 1h" [value]="47" sublabel="via rabbit" />
+            <retro-stat-box
               label="Uptime"
               value="99.94%"
               [sublabel]="apiOffline() ? 'mock pipeline' : 'gateway'"
             />
           </div>
-        </app-retro-window>
+        </retro-window>
       </section>
 
       <section class="toolbar frame">
-        <app-retro-input
+        <retro-input
           prefix="$"
           [value]="searchQuery"
           placeholder="grep projects..."
@@ -105,34 +105,34 @@
         />
 
         <div class="filter-buttons">
-          <app-retro-button
+          <retro-button
             size="sm"
             [variant]="selectedFilter === 'all' ? 'primary' : 'secondary'"
             (pressed)="selectedFilter = 'all'"
           >
             All
-          </app-retro-button>
-          <app-retro-button
+          </retro-button>
+          <retro-button
             size="sm"
             [variant]="selectedFilter === 'active' ? 'primary' : 'secondary'"
             (pressed)="selectedFilter = 'active'"
           >
             Active
-          </app-retro-button>
-          <app-retro-button
+          </retro-button>
+          <retro-button
             size="sm"
             [variant]="selectedFilter === 'paused' ? 'primary' : 'secondary'"
             (pressed)="selectedFilter = 'paused'"
           >
             Paused
-          </app-retro-button>
-          <app-retro-button
+          </retro-button>
+          <retro-button
             size="sm"
             [variant]="selectedFilter === 'archived' ? 'primary' : 'secondary'"
             (pressed)="selectedFilter = 'archived'"
           >
             Archived
-          </app-retro-button>
+          </retro-button>
         </div>
 
         <div class="toolbar-divider"></div>
@@ -161,42 +161,42 @@
       </section>
 
       @if (!filteredProjects().length) {
-        <app-retro-window title="grep.result" subtitle="no matches">
+        <retro-window title="grep.result" subtitle="no matches">
           <div class="empty-state">
             <p>$ grep: nenhum projeto encontrado com esse filtro.</p>
           </div>
-        </app-retro-window>
+        </retro-window>
       }
     } @else if (activeTab === 'architecture') {
-      <app-retro-window title="~/devboard/architecture" subtitle="system.map">
+      <retro-window title="~/devboard/architecture" subtitle="system.map">
         <div class="section-body">
           <h2>Architecture view</h2>
           <p>
             Aqui podemos evoluir para um mapa visual de API, tasks, notifications e fluxo de
             eventos internos quando voce quiser.
           </p>
-          <app-retro-button variant="secondary" size="md" (pressed)="openCommandModal()">
+          <retro-button variant="secondary" size="md" (pressed)="openCommandModal()">
             Open Commands
-          </app-retro-button>
+          </retro-button>
         </div>
-      </app-retro-window>
+      </retro-window>
     } @else {
-      <app-retro-window title="~/devboard/tasks" subtitle="queue.view">
+      <retro-window title="~/devboard/tasks" subtitle="queue.view">
         <div class="section-body">
           <h2>Tasks view</h2>
           <p>
             Esta aba ja esta funcional e pronta para receber a listagem real assim que entrarmos
             com os endpoints de tarefas.
           </p>
-          <app-retro-button variant="secondary" size="md" (pressed)="setActiveTab('projects')">
+          <retro-button variant="secondary" size="md" (pressed)="setActiveTab('projects')">
             Back To Projects
-          </app-retro-button>
+          </retro-button>
         </div>
-      </app-retro-window>
+      </retro-window>
     }
   </main>
 
-  <app-retro-modal
+  <retro-modal
     [open]="isCommandModalOpen"
     title="cmd.k"
     subtitle="fuzzy search"
@@ -206,9 +206,9 @@
     <div modal-body class="command-shell">
       <div class="command-search-row">
         <input class="command-search-input" type="text" placeholder="Search projects, commands..." />
-        <app-retro-button variant="secondary" size="sm" (pressed)="closeCommandModal()">
+        <retro-button variant="secondary" size="sm" (pressed)="closeCommandModal()">
           Esc
-        </app-retro-button>
+        </retro-button>
       </div>
 
       <div class="command-list">
@@ -224,10 +224,10 @@
     </div>
 
     <div modal-actions class="modal-actions">
-      <app-retro-button variant="ghost" size="sm" (pressed)="closeCommandModal()">
+      <retro-button variant="ghost" size="sm" (pressed)="closeCommandModal()">
         Close
-      </app-retro-button>
-      <app-retro-button variant="primary" size="sm">Run</app-retro-button>
+      </retro-button>
+      <retro-button variant="primary" size="sm">Run</retro-button>
     </div>
-  </app-retro-modal>
+  </retro-modal>
 </div>

@@ -13,7 +13,7 @@ export interface StatusShortcut {
 }
 
 @Component({
-  selector: 'app-retro-status-bar',
+  selector: 'retro-status-bar',
   standalone: true,
   imports: [RetroKbdComponent],
   templateUrl: './retro-status-bar.component.html',

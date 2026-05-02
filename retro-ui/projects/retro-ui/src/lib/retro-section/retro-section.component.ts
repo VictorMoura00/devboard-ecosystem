@@ -4,7 +4,7 @@ import { WindowVariant } from '../retro-window/window.model';
 export type SectionVariant = WindowVariant;
 
 @Component({
-  selector: 'app-retro-section',
+  selector: 'retro-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-section.component.html',

@@ -20,7 +20,7 @@ export interface RetroSelectOption {
 }
 
 @Component({
-  selector: 'app-retro-select',
+  selector: 'retro-select',
   standalone: true,
   templateUrl: './retro-select.component.html',
   styleUrl: './retro-select.component.scss',

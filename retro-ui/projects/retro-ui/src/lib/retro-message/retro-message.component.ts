@@ -4,7 +4,7 @@ export type MessageSeverity = 'info' | 'success' | 'warning' | 'error';
 export type MessageVariant  = 'filled' | 'outlined' | 'ghost';
 
 @Component({
-  selector: 'app-retro-message',
+  selector: 'retro-message',
   standalone: true,
   templateUrl: './retro-message.component.html',
   styleUrl: './retro-message.component.scss',

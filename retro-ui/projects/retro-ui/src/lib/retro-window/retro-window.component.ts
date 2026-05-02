@@ -12,7 +12,7 @@ import { NgStyle } from '@angular/common';
 import { WindowControl, WindowPadding, WindowStatus, WindowVariant } from './window.model';
 
 @Component({
-  selector: 'app-retro-window',
+  selector: 'retro-window',
   standalone: true,
   imports: [NgStyle],
   templateUrl: './retro-window.component.html',

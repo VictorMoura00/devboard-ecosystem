@@ -4,7 +4,7 @@ export type TagVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger
 export type TagSize    = 'sm' | 'md';
 
 @Component({
-  selector: 'app-retro-tag',
+  selector: 'retro-tag',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-tag.component.html',

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
-  selector: 'app-ascii-bar',
+  selector: 'retro-ascii-bar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<span class="ascii-bar">{{ bar() }}</span>`,

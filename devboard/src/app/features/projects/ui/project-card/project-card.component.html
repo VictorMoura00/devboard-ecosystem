@@ -1,10 +1,10 @@
-<app-retro-window
+<retro-window
   [title]="'proj/' + indexLabel()"
   [subtitle]="(displayName() ?? '') | lowercase | slice: 0 : 18"
   [padding]="size() === 'sm' ? 'sm' : size() === 'lg' ? 'lg' : 'md'"
 >
   <span class="card-status-wrap" window-actions>
-    <app-status-pill [status]="status()" />
+    <retro-status-pill [status]="status()" />
   </span>
 
   <div class="project-heading">
@@ -68,4 +68,4 @@
     }
     <span>{{ project().createdAt | date: 'yyyy-MM-dd' }}</span>
   </footer>
-</app-retro-window>
+</retro-window>

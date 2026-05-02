@@ -24,7 +24,7 @@
   />
 
   @if (showClear()) {
-    <button type="button" class="input-clear" (click)="onClear()" aria-label="Limpar">×</button>
+    <button type="button" class="input-clear" (click)="onClear()" aria-label="Clear">×</button>
   } @else if (suffix()) {
     <span class="input-suffix">{{ suffix() }}</span>
   }

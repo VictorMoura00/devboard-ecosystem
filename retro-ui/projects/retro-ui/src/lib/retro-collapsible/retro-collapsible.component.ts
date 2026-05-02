@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 
 @Component({
-  selector: 'app-retro-collapsible',
+  selector: 'retro-collapsible',
   standalone: true,
   templateUrl: './retro-collapsible.component.html',
   styleUrl: './retro-collapsible.component.scss',

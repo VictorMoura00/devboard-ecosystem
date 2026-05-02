@@ -13,7 +13,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { APP_THEMES, ThemeName, ThemeService } from '@retro-ui';
+import { APP_THEMES, DisplayMode, RetroThemeName, ThemeService } from '@retro-ui';
 import {
   AsciiBarComponent,
   FilterRule,
@@ -81,6 +81,9 @@ import { StatusPillSize } from '@retro-ui';
 import { WindowControl, WindowPadding, WindowStatus, WindowVariant } from '@retro-ui';
 
 type StoryId =
+  | 'foundations-colors' | 'foundations-tokens' | 'foundations-typography'
+  | 'foundations-spacing' | 'foundations-borders' | 'foundations-shadows'
+  | 'foundations-states' | 'foundations-theme' | 'foundations-a11y'
   | 'win' | 'button' | 'input' | 'select' | 'range' | 'checkbox' | 'kbd'
   | 'pill' | 'dot' | 'tag' | 'stat'
   | 'progress' | 'ascii' | 'toast' | 'message' | 'skeleton'
@@ -104,6 +107,29 @@ interface StoryDocMeta {
   inputs: number;
   outputs: number;
   slots: number;
+}
+
+type DocBadge = 'standalone' | 'cva' | 'onpush' | 'a11y' | 'form' | 'layout' | 'display' | 'feedback' | 'composable' | 'interactive';
+
+interface DocApiRow {
+  name: string;
+  type: string;
+  default: string;
+  desc: string;
+  required?: boolean;
+}
+
+interface ComponentDoc {
+  badges: DocBadge[];
+  description: string;
+  inputs?: DocApiRow[];
+  outputs?: DocApiRow[];
+  methods?: DocApiRow[];
+  cva?: string[];
+  slots?: string;
+  a11y: string[];
+  practices: string[];
+  tokens?: string[];
 }
 
 @Component({
@@ -165,11 +191,12 @@ export class UiLibraryPageComponent implements OnInit {
 
   protected readonly themes       = APP_THEMES;
   protected readonly currentTheme = this.themeService.currentTheme;
+  protected readonly displayMode  = this.themeService.displayMode;
   protected readonly themeOptions = (() => {
     const opts: { label: string; value: string; separator?: boolean }[] = [];
     let hadDark = false;
     for (const theme of APP_THEMES) {
-      if (theme.dark && !hadDark) {
+      if (theme.mode === 'dark' && !hadDark) {
         opts.push({ label: '', value: '__sep__', separator: true });
         hadDark = true;
       }
@@ -177,6 +204,419 @@ export class UiLibraryPageComponent implements OnInit {
     }
     return opts;
   })();
+  protected readonly modeOptions: { label: string; value: DisplayMode; icon: string }[] = [
+    { label: 'Light', value: 'light', icon: '☀' },
+    { label: 'Dark', value: 'dark', icon: '☾' },
+  ];
+
+  protected setTheme(name: RetroThemeName): void { this.themeService.setTheme(name); }
+  protected setMode(mode: DisplayMode): void  { this.themeService.setMode(mode); }
+  protected toggleMode(): void { this.themeService.toggleMode(); }
+
+  // ── Foundations data ────────────────────────────────────────────────────
+
+  protected readonly colorSwatches = [
+    { name: 'amber', value: '#ffb000' },
+    { name: 'amber-bright', value: '#ffd166' },
+    { name: 'phosphor', value: '#33ff66' },
+    { name: 'cyan', value: '#00d3ff' },
+    { name: 'red', value: '#ff4136' },
+    { name: 'line', value: '#1a1a18' },
+    { name: 'line-soft', value: '#8f8a7a' },
+    { name: 'text', value: '#1a1a18' },
+    { name: 'muted', value: '#6b6b60' },
+    { name: 'panel', value: '#d8d3c4' },
+    { name: 'panel-alt', value: '#e4dfd0' },
+    { name: 'sunken', value: '#b8b2a1' },
+    { name: 'desktop', value: '#c9c3b2' },
+  ];
+
+  protected readonly semanticSwatches = [
+    { name: 'text', cssVar: '--text' },
+    { name: 'muted', cssVar: '--muted' },
+    { name: 'line', cssVar: '--line' },
+    { name: 'line-soft', cssVar: '--line-soft' },
+    { name: 'panel', cssVar: '--panel' },
+    { name: 'panel-alt', cssVar: '--panel-alt' },
+    { name: 'sunken', cssVar: '--sunken' },
+    { name: 'desktop', cssVar: '--desktop' },
+    { name: 'amber', cssVar: '--amber' },
+    { name: 'amber-bright', cssVar: '--amber-bright' },
+    { name: 'phosphor', cssVar: '--phosphor' },
+    { name: 'cyan', cssVar: '--cyan' },
+    { name: 'red', cssVar: '--red' },
+    { name: 'focus-ring', cssVar: '--focus-ring' },
+    { name: 'input-bg', cssVar: '--input-bg' },
+  ];
+
+  protected readonly spacingValues = [
+    { name: '--space-1', px: 2 },
+    { name: '--space-2', px: 4 },
+    { name: '--space-3', px: 6 },
+    { name: '--space-4', px: 8 },
+    { name: '--space-5', px: 12 },
+    { name: '--space-6', px: 16 },
+    { name: '--space-8', px: 24 },
+    { name: '--space-10', px: 32 },
+    { name: '--space-12', px: 48 },
+    { name: '--space-16', px: 64 },
+  ];
+
+  protected readonly radiusValues = [
+    { name: '--radius-none', value: '0' },
+    { name: '--radius-sm', value: '2px' },
+    { name: '--radius-md', value: '4px' },
+    { name: '--radius-lg', value: '8px' },
+    { name: '--radius-full', value: '9999px' },
+  ];
+
+  protected readonly colorsDocCode = `# Colors
+
+## Architecture
+
+retro-ui uses a three-layer token system:
+
+1. **Primitive tokens** — raw color values per theme (\`--_amber\`, \`--_panel\`, etc.)
+2. **Semantic tokens** — mapped from primitives (\`--amber\`, \`--panel\`, etc.)
+3. **Component tokens** — derived from semantics (\`--button-primary-bg\`, etc.)
+
+## Primitive palette
+
+Each theme defines its own primitive values. Components never use primitives directly.
+
+\`\`\`scss
+html[data-theme='classic-amber'] {
+  --_amber:      #ffb000;
+  --_panel:      #d8d3c4;
+  --_line:       #1a1a18;
+  --_text:       #1a1a18;
+  // ...
+}
+\`\`\`
+
+## Semantic mapping
+
+Semantic tokens are mapped from primitives. Mode (light/dark) determines the mapping:
+
+\`\`\`scss
+html[data-theme][data-mode='light'] {
+  --amber: var(--_amber);
+  --panel: var(--_panel);
+}
+\`\`\`
+
+## Usage
+
+Always use semantic tokens in components:
+
+\`\`\`scss
+.my-component {
+  background: var(--panel);     /* ✅ semantic */
+  color: var(--text);            /* ✅ semantic */
+  border-color: var(--line);     /* ✅ semantic */
+}
+\`\`\`
+
+Never use primitive tokens:
+
+\`\`\`scss
+.my-component {
+  background: var(--_panel);    /* ❌ primitive */
+  color: var(--_text);           /* ❌ primitive */
+}
+\`\`\``;
+
+  protected readonly tokensDocCode = `# Design Tokens
+
+## Token Layers
+
+### 1. Primitives
+Raw values defined per theme. Prefixed with \`--_\`.
+
+\`\`\`
+--_desktop, --_panel, --_panel-alt, --_sunken
+--_line, --_line-soft, --_text, --_muted
+--_amber, --_amber-brite, --_phosphor, --_cyan, --_red
+--_input-bg
+\`\`\`
+
+### 2. Semantic
+Mapped from primitives. Used by components.
+
+\`\`\`
+--desktop, --panel, --panel-alt, --sunken
+--line, --line-soft, --text, --muted
+--amber, --amber-bright, --phosphor, --cyan, --red
+--input-bg, --focus-ring, --page-bg
+\`\`\`
+
+### 3. Component
+Derived from semantic tokens.
+
+\`\`\`
+--button-primary-bg, --button-primary-fg
+--button-secondary-bg, --button-secondary-fg
+--button-shadow
+--font-mono, --font-display
+\`\`\`
+
+## Spacing Scale
+
+\`\`\`
+--space-1:   2px
+--space-2:   4px
+--space-3:   6px
+--space-4:   8px
+--space-5:  12px
+--space-6:  16px
+--space-8:  24px
+--space-10: 32px
+--space-12: 48px
+--space-16: 64px
+\`\`\`
+
+## Border Radius
+
+\`\`\`
+--radius-none: 0
+--radius-sm:   2px
+--radius-md:   4px
+--radius-lg:   8px
+--radius-full: 9999px
+\`\`\`
+
+## Shadows
+
+\`\`\`
+--shadow-sm: 1px 1px 0 0 var(--shadow-color)
+--shadow-md: 2px 2px 0 0 var(--shadow-color)
+--shadow-lg: 3px 3px 0 0 var(--shadow-color)
+\`\`\`
+
+## Transitions
+
+\`\`\`
+--transition-fast: 100ms ease
+--transition-base: 150ms ease
+--transition-slow: 300ms ease
+\`\`\``;
+
+  protected readonly themeDocCode = `# Theme & Mode
+
+## Architecture
+
+Theme and Mode are independent:
+
+- **Theme** defines the color palette identity (Classic Amber, Synthwave, etc.)
+- **Mode** determines surface mapping (light or dark)
+
+\`\`\`
+Theme: retro-classic-amber
+Mode: light | dark
+\`\`\`
+
+## Themes
+
+| Theme | Mode | Accent |
+|-------|------|--------|
+| Classic Amber | light | amber |
+| Phosphor Green | light | green |
+| CRT Blue | light | blue |
+| Dark Amber | dark | amber |
+| Synthwave | dark | pink |
+| Solar Sepia | dark | amber |
+
+## Mode Switching
+
+Mode changes semantic surface tokens globally. No component-level overrides needed.
+
+\`\`\`typescript
+// ThemeService
+themeService.setTheme('classic-amber');
+themeService.setMode('dark');
+themeService.toggleMode();
+\`\`\`
+
+\`\`\`html
+<!-- HTML attributes set by ThemeService -->
+<html data-theme="classic-amber" data-mode="dark">
+\`\`\`
+
+## Best Practices
+
+- ✅ Use semantic tokens (\`--panel\`, \`--text\`)
+- ✅ Let mode handle light/dark surfaces
+- ✅ Use \`--focus-ring\` for focus states
+- ❌ Don't use primitive tokens (\`--_panel\`)
+- ❌ Don't hardcode colors in components
+- ❌ Don't create separate dark mode styles per component`;
+
+  protected readonly typographyDocCode = `# Typography
+
+## Font Families
+
+Two typefaces power the retro-ui aesthetic:
+
+\`\`\`scss
+--font-display: 'Share Tech Mono', monospace;  /* headings, chrome */
+--font-mono:    'JetBrains Mono', monospace;   /* body, code, terminals */
+\`\`\`
+
+## Type Scale
+
+\`\`\`
+display:  28px / --font-display / uppercase / 0.05em letter-spacing
+h1:       24px / --font-display / uppercase
+h2:       18px / --font-display / uppercase
+body:     14px / --font-mono
+small:    12px / --font-mono / --muted color
+code:     11px / --font-mono / --sunken background
+label:    10px / --font-mono / uppercase
+badge:     9px / --font-mono
+\`\`\``;
+
+  protected readonly spacingDocCode = `# Spacing
+
+## Scale
+
+Consistent spacing creates rhythm. Always use tokens:
+
+\`\`\`
+--space-1:   2px   /* micro gaps, icon padding */
+--space-2:   4px   /* tight element spacing */
+--space-3:   6px   /* label gaps */
+--space-4:   8px   /* standard padding */
+--space-5:  12px   /* component padding */
+--space-6:  16px   /* section gaps */
+--space-8:  24px   /* layout margins */
+--space-10: 32px   /* page sections */
+--space-12: 48px   /* page gaps */
+--space-16: 64px   /* major divisions */
+\`\`\``;
+
+  protected readonly bordersDocCode = `# Borders & Radius
+
+## Border Widths
+
+\`\`\`scss
+--border-width: 2px;    /* default component border */
+--border-thin:  1px;    /* subtle dividers */
+--border-thick: 3px;    /* emphasis, selected states */
+\`\`\`
+
+## Radius Scale
+
+\`\`\`
+--radius-none:  0        /* sharp corners, terminal feel */
+--radius-sm:    2px      /* subtle softening */
+--radius-md:    4px      /* standard component radius */
+--radius-lg:    8px      /* cards, modals */
+--radius-full:  9999px   /* pills, dots */
+\`\`\``;
+
+  protected readonly shadowsDocCode = `# Shadows
+
+## Shadow Tokens
+
+Retro-ui uses crisp, offset shadows rather than blur for a pixel-authentic look:
+
+\`\`\`scss
+--shadow-sm: 1px 1px 0 0 var(--shadow-color);
+--shadow-md: 2px 2px 0 0 var(--shadow-color);
+--shadow-lg: 3px 3px 0 0 var(--shadow-color);
+--shadow-color: var(--line);
+\`\`\`
+
+Components use shadows consistently for elevation and depth cues.`;
+
+  protected readonly statesDocCode = `# States
+
+## Interactive States
+
+Every interactive component implements:
+
+\`\`\`scss
+/* Hover */
+--hover-bg: var(--panel-alt);
+
+/* Focus */
+--focus-ring: 2px solid var(--amber);
+--focus-ring-offset: 2px;
+
+/* Active */
+--active-bg: var(--sunken);
+
+/* Disabled */
+--disabled-opacity: 0.5;
+--disabled-pointer: not-allowed;
+
+/* Transitions */
+--transition-fast: 100ms ease;
+--transition-base: 150ms ease;
+\`\`\`
+
+## Keyboard
+
+- Tab: move focus
+- Enter/Space: activate
+- Escape: cancel/close
+- Arrow keys: navigate within components`;
+
+  protected readonly a11yDocCode = `# Accessibility
+
+## WCAG Requirements
+
+- **AA Contrast**: 4.5:1 for normal text, 3:1 for large text
+- **Focus visible**: All interactive elements show focus
+- **Keyboard operable**: Tab, Enter, Space, Escape, Arrow keys
+
+## Component Rules
+
+1. Form controls have associated labels
+2. Error states include text descriptions
+3. ARIA attributes complement (not replace) semantic HTML
+4. Color is never the sole indicator of state
+
+## Testing
+
+- Test with screen reader (NVDA, VoiceOver)
+- Navigate with keyboard only
+- Verify contrast with devtools`;
+
+  protected readonly typeScale = [
+    { name: 'display', size: '28px', family: 'var(--font-display)', sample: 'RETRO/UI' },
+    { name: 'h1', size: '24px', family: 'var(--font-display)', sample: 'Section Title' },
+    { name: 'h2', size: '18px', family: 'var(--font-display)', sample: 'Subsection' },
+    { name: 'body', size: '14px', family: 'var(--font-mono)', sample: 'Body text content' },
+    { name: 'small', size: '12px', family: 'var(--font-mono)', sample: 'Muted helper text' },
+    { name: 'label', size: '10px', family: 'var(--font-mono)', sample: 'LABEL' },
+    { name: 'badge', size: '9px', family: 'var(--font-mono)', sample: 'BADGE' },
+  ];
+
+  protected readonly shadowTokens = [
+    { name: '--shadow-sm', value: '1px 1px 0 0 var(--line)' },
+    { name: '--shadow-md', value: '2px 2px 0 0 var(--line)' },
+    { name: '--shadow-lg', value: '3px 3px 0 0 var(--line)' },
+  ];
+
+  protected readonly stateTokens = [
+    { name: 'hover', color: 'var(--panel-alt)', desc: 'Mouse over interactive element' },
+    { name: 'focus', color: 'var(--amber)', desc: 'Keyboard focus indicator' },
+    { name: 'active', color: 'var(--sunken)', desc: 'Element being pressed' },
+    { name: 'disabled', color: 'var(--muted)', desc: 'Interaction blocked (50% opacity)' },
+    { name: 'loading', color: 'var(--cyan)', desc: 'Processing or awaiting response' },
+    { name: 'error', color: 'var(--red)', desc: 'Invalid state or failure' },
+  ];
+
+  protected readonly availableThemes = APP_THEMES.map(t => ({
+    name: t.name,
+    label: t.label,
+    swatches: [t.primitives.amber ?? t.primitives.phosphor ?? '#ffb000', t.primitives.panel ?? '#d8d3c4', t.primitives.line ?? '#1a1a18'],
+  }));
+
+  protected cssVar(name: string): string {
+    return `var(${name})`;
+  }
 
   protected readonly sidebarCollapsed = signal(false);
   protected toggleSidebar(): void { this.sidebarCollapsed.update(v => !v); }
@@ -193,6 +633,20 @@ export class UiLibraryPageComponent implements OnInit {
   }
 
   protected readonly storyGroups: StoryGroup[] = [
+    {
+      group: 'foundations',
+      items: [
+        { id: 'foundations-colors',   label: 'Colors' },
+        { id: 'foundations-tokens',   label: 'Tokens' },
+        { id: 'foundations-typography', label: 'Typography' },
+        { id: 'foundations-spacing',  label: 'Spacing' },
+        { id: 'foundations-borders',  label: 'Borders' },
+        { id: 'foundations-shadows',  label: 'Shadows' },
+        { id: 'foundations-states',   label: 'States' },
+        { id: 'foundations-theme',    label: 'Theme & Mode' },
+        { id: 'foundations-a11y',     label: 'Accessibility' },
+      ],
+    },
     {
       group: 'containers',
       items: [
@@ -270,7 +724,7 @@ export class UiLibraryPageComponent implements OnInit {
     },
   ];
 
-  protected readonly activeStory = signal<StoryId>('button');
+  protected readonly activeStory = signal<StoryId>('foundations-colors');
   protected readonly activeTab   = signal<StoryTab>('preview');
   protected readonly activeDocTab = signal<DocTab>('api');
   protected readonly previewBackground = signal<PreviewBackground>('panel');
@@ -319,17 +773,44 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly activeStoryLabel = computed(() => this.activeStoryItem()?.label ?? this.activeStory());
   protected readonly activeGroupLabel = computed(() => this.activeStoryItem()?.group ?? 'catalog');
   protected readonly activeBreadcrumb = computed(
-    () => `catalog / ${this.activeGroupLabel()} / ${this.activeStoryLabel()}`,
+    () => {
+      const story = this.activeStory();
+      if (story.startsWith('foundations')) {
+        return `foundations / ${this.activeStoryLabel()}`;
+      }
+      return `catalog / ${this.activeGroupLabel()} / ${this.activeStoryLabel()}`;
+    },
   );
   protected readonly activeStoryPath = computed(
-    () => `@retro-ui/${this.activeStoryTitle().replace('.ts', '')}`,
+    () => {
+      const story = this.activeStory();
+      if (story.startsWith('foundations')) {
+        return `@retro-ui/docs/${story.replace('foundations-', '')}`;
+      }
+      return `@retro-ui/${this.activeStoryTitle().replace('.ts', '')}`;
+    },
   );
   protected readonly activeStoryHint = computed(
-    () => `${this.activeGroupLabel()} component · shareable via ?story=${this.activeStory()}`,
+    () => {
+      const story = this.activeStory();
+      if (story.startsWith('foundations')) {
+        return 'foundation guide';
+      }
+      return `${this.activeGroupLabel()} component · shareable via ?story=${this.activeStory()}`;
+    },
   );
 
   protected readonly activeStoryTitle = computed(() => {
     const map: Record<StoryId, string> = {
+      'foundations-colors':     'foundations/colors.md',
+      'foundations-tokens':     'foundations/tokens.md',
+      'foundations-typography': 'foundations/typography.md',
+      'foundations-spacing':    'foundations/spacing.md',
+      'foundations-borders':    'foundations/borders.md',
+      'foundations-shadows':    'foundations/shadows.md',
+      'foundations-states':     'foundations/states.md',
+      'foundations-theme':      'foundations/theme.md',
+      'foundations-a11y':       'foundations/accessibility.md',
       win:        'retro-window.component.ts',
       button:     'retro-button.component.ts',
       input:      'retro-input.component.ts',
@@ -369,39 +850,48 @@ export class UiLibraryPageComponent implements OnInit {
 
   protected readonly activeDocMeta = computed<StoryDocMeta>(() => {
     const docs: Record<StoryId, StoryDocMeta> = {
-      win: { selector: 'app-retro-window', summary: 'Janela base para shells, painéis e blocos do design system retrô.', inputs: 11, outputs: 4, slots: 3 },
-      button: { selector: 'app-retro-button', summary: 'Botão principal da biblioteca com variantes, loading e link rendering.', inputs: 7, outputs: 1, slots: 1 },
-      input: { selector: 'app-retro-input', summary: 'Campo de entrada retrô com prefixo, suffix, clearable e estados visuais.', inputs: 14, outputs: 2, slots: 0 },
-      select: { selector: 'app-retro-select', summary: 'Select retrô para listas pequenas e configurações rápidas do sistema.', inputs: 7, outputs: 1, slots: 0 },
-      range: { selector: 'app-retro-range', summary: 'Slider retrô para ajustes de valor contínuo com feedback imediato.', inputs: 9, outputs: 1, slots: 0 },
-      checkbox: { selector: 'app-retro-checkbox', summary: 'Checkbox standalone com estados checked, readonly, invalid e indeterminate.', inputs: 9, outputs: 2, slots: 0 },
-      kbd: { selector: 'app-retro-kbd', summary: 'Representação visual de teclas únicas ou combos de atalhos.', inputs: 1, outputs: 0, slots: 1 },
-      pill: { selector: 'app-status-pill', summary: 'Pill compacta para estados de workflow e status categóricos.', inputs: 3, outputs: 0, slots: 0 },
-      dot: { selector: 'app-status-dot', summary: 'Indicador pontual de estado com opção de pulso para atividade.', inputs: 4, outputs: 0, slots: 0 },
-      tag: { selector: 'app-retro-tag', summary: 'Tag textual para labels, filtros e taxonomias do projeto.', inputs: 6, outputs: 1, slots: 0 },
-      stat: { selector: 'app-stat-box', summary: 'Caixa métrica para KPIs, contadores e resumos do dashboard.', inputs: 5, outputs: 0, slots: 0 },
-      progress: { selector: 'app-retro-progress', summary: 'Barra de progresso com modos determinate e indeterminate.', inputs: 7, outputs: 0, slots: 0 },
-      ascii: { selector: 'app-ascii-bar', summary: 'Barra em estilo terminal usando caracteres ASCII configuráveis.', inputs: 5, outputs: 0, slots: 0 },
-      toast: { selector: 'app-retro-toast', summary: 'Host visual para notificações emitidas pelo ToastService.', inputs: 2, outputs: 1, slots: 0 },
-      message: { selector: 'app-retro-message', summary: 'Mensagem inline com severidade, variante e fechamento opcional.', inputs: 5, outputs: 1, slots: 1 },
-      skeleton: { selector: 'app-retro-skeleton', summary: 'Placeholder visual para carregamento com wave, pulse ou estado estático.', inputs: 5, outputs: 0, slots: 0 },
-      modal: { selector: 'app-retro-modal', summary: 'Modal standalone com overlay, backdrop close, teclado e slots nomeados.', inputs: 6, outputs: 1, slots: 2 },
-      collapsible:      { selector: 'app-retro-collapsible',   summary: 'Bloco expansível para seções de documentação e conteúdo progressivo.', inputs: 3, outputs: 1, slots: 1 },
-      code:             { selector: 'app-retro-code',          summary: 'Bloco de código com linguagem, borda opcional e ação de cópia.', inputs: 3, outputs: 0, slots: 0 },
-      'toolbar-search': { selector: 'app-toolbar-search',      summary: 'Campo de busca pré-configurado para toolbars — wraps RetroInput com prefix $ e clearable.', inputs: 2, outputs: 2, slots: 0 },      'notif-item':             { selector: 'app-retro-notif-item',         summary: 'Linha individual de notificação com badge de tipo, fonte, timestamp relativo e subtítulo.', inputs: 6, outputs: 1, slots: 0 },
-      'notif-stream':           { selector: 'app-retro-notif-stream',        summary: 'Painel lateral de notificações com slide-in, ações em lote e projeção de NotifItem.', inputs: 1, outputs: 1, slots: 1 },
-      'priority-indicator':     { selector: 'app-priority-indicator',        summary: 'Indicador de prioridade em estilo terminal: !!, !, •, · ou — por nível.', inputs: 1, outputs: 0, slots: 0 },
-      'visibility-chip':        { selector: 'app-visibility-chip',           summary: 'Chip de visibilidade [PUB]/[PRIV]/[INT] com cor semântica por tipo.', inputs: 1, outputs: 0, slots: 0 },
-      'retro-filter-bar':       { selector: 'app-retro-filter-bar',          summary: 'Barra de filtros genérica com single/multi-select, disabled por tab e slot [filter-end] para controles extras.', inputs: 5, outputs: 2, slots: 1 },      'retro-grid-row':         { selector: 'app-retro-grid-row',            summary: 'Linha genérica de grid — projeta qualquer filho como célula e herda --grid-cols.', inputs: 0, outputs: 0, slots: 1 },
-      'retro-expandable-row':   { selector: 'app-retro-expandable-row',      summary: 'Linha expansível com painel de detalhe animado — herda --grid-cols e usa model(expanded).', inputs: 1, outputs: 1, slots: 2 },
-      'retro-paginator':        { selector: 'app-retro-paginator',           summary: 'Barra de paginação com navegação de páginas, janela inteligente de números e seletor de page size.', inputs: 5, outputs: 2, slots: 0 },
-      'retro-status-bar':       { selector: 'app-retro-status-bar',          summary: 'Barra de status fixa com versão, itens de sistema e atalhos de teclado.', inputs: 3, outputs: 0, slots: 0 },
-      'retro-data-grid':        { selector: 'app-retro-data-grid',           summary: 'Grid de dados com sort, busca, filtros por checkbox, regras avançadas (column+op+value), redimensionamento de colunas e visibilidade dinâmica.', inputs: 18, outputs: 11, slots: 2 },      'terminal':               { selector: 'app-retro-terminal',            summary: 'Terminal interativo com histórico, tab completion, typewriter, cursor de bloco e comandos registráveis.', inputs: 7, outputs: 1, slots: 0 },
-      'segmented':              { selector: 'app-retro-segmented',           summary: 'Seletor segmentado compatível com CVA — alterna entre opções de texto em layout row ou col.', inputs: 3, outputs: 1, slots: 0 },
-      'button-group':           { selector: 'app-retro-button-group',        summary: 'Wrapper semântico que agrupa botões adjacentes removendo bordas internas duplicadas.', inputs: 0, outputs: 0, slots: 1 },
-      'api-table':              { selector: 'app-api-table',                 summary: 'Tabela de referência de API — renderiza cabeçalhos tipados (input/output/method) e projeta linhas via ng-content.', inputs: 3, outputs: 0, slots: 1 },
-      'retro-tabs':             { selector: 'app-retro-tabs',                summary: 'Barra de abas estilo terminal com disabled, icon, badge por aba, navegação por teclado (← → Home End) e cinco variantes visuais.', inputs: 3, outputs: 1, slots: 1 },
-      'retro-section':          { selector: 'app-retro-section',             summary: 'Contêiner estilo fieldset com label na borda — versão leve do window frame para agrupar conteúdo internamente.', inputs: 2, outputs: 0, slots: 1 },
+      'foundations-colors': { selector: 'design.tokens', summary: 'Semantic color tokens mapped from theme primitives. Mode (light/dark) controls the surface mapping without touching components.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-tokens': { selector: 'design.tokens', summary: 'Primitive and semantic token layers — how theme values cascade to component styles.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-typography': { selector: 'design.typography', summary: 'Type scale, font families, and text token conventions used across all components.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-spacing': { selector: 'design.spacing', summary: 'Spacing scale and density conventions for consistent layout rhythm.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-borders': { selector: 'design.borders', summary: 'Border widths, radii, and edge treatment patterns.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-shadows': { selector: 'design.shadows', summary: 'Shadow tokens for depth, elevation, and glow effects.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-states': { selector: 'design.states', summary: 'Interactive state tokens — hover, focus, active, disabled conventions.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-theme': { selector: 'design.theme', summary: 'Theme architecture: primitives, semantic mapping, mode switching, and accent colors.', inputs: 0, outputs: 0, slots: 0 },
+      'foundations-a11y': { selector: 'design.a11y', summary: 'Accessibility guidelines, contrast requirements, keyboard navigation patterns, and ARIA conventions.', inputs: 0, outputs: 0, slots: 0 },
+      win: { selector: 'retro-window', summary: 'Janela base para shells, painéis e blocos do design system retrô.', inputs: 11, outputs: 4, slots: 3 },
+      button: { selector: 'retro-button', summary: 'Botão principal da biblioteca com variantes, loading e link rendering.', inputs: 7, outputs: 1, slots: 1 },
+      input: { selector: 'retro-input', summary: 'Campo de entrada retrô com prefixo, suffix, clearable e estados visuais.', inputs: 14, outputs: 2, slots: 0 },
+      select: { selector: 'retro-select', summary: 'Select retrô para listas pequenas e configurações rápidas do sistema.', inputs: 7, outputs: 1, slots: 0 },
+      range: { selector: 'retro-range', summary: 'Slider retrô para ajustes de valor contínuo com feedback imediato.', inputs: 9, outputs: 1, slots: 0 },
+      checkbox: { selector: 'retro-checkbox', summary: 'Checkbox standalone com estados checked, readonly, invalid e indeterminate.', inputs: 9, outputs: 2, slots: 0 },
+      kbd: { selector: 'retro-kbd', summary: 'Representação visual de teclas únicas ou combos de atalhos.', inputs: 1, outputs: 0, slots: 1 },
+      pill: { selector: 'retro-status-pill', summary: 'Pill compacta para estados de workflow e status categóricos.', inputs: 3, outputs: 0, slots: 0 },
+      dot: { selector: 'retro-status-dot', summary: 'Indicador pontual de estado com opção de pulso para atividade.', inputs: 4, outputs: 0, slots: 0 },
+      tag: { selector: 'retro-tag', summary: 'Tag textual para labels, filtros e taxonomias do projeto.', inputs: 6, outputs: 1, slots: 0 },
+      stat: { selector: 'retro-stat-box', summary: 'Caixa métrica para KPIs, contadores e resumos do dashboard.', inputs: 5, outputs: 0, slots: 0 },
+      progress: { selector: 'retro-progress', summary: 'Barra de progresso com modos determinate e indeterminate.', inputs: 7, outputs: 0, slots: 0 },
+      ascii: { selector: 'retro-ascii-bar', summary: 'Barra em estilo terminal usando caracteres ASCII configuráveis.', inputs: 5, outputs: 0, slots: 0 },
+      toast: { selector: 'retro-toast', summary: 'Host visual para notificações emitidas pelo ToastService.', inputs: 2, outputs: 1, slots: 0 },
+      message: { selector: 'retro-message', summary: 'Mensagem inline com severidade, variante e fechamento opcional.', inputs: 5, outputs: 1, slots: 1 },
+      skeleton: { selector: 'retro-skeleton', summary: 'Placeholder visual para carregamento com wave, pulse ou estado estático.', inputs: 5, outputs: 0, slots: 0 },
+      modal: { selector: 'retro-modal', summary: 'Modal standalone com overlay, backdrop close, teclado e slots nomeados.', inputs: 6, outputs: 1, slots: 2 },
+      collapsible:      { selector: 'retro-collapsible',   summary: 'Bloco expansível para seções de documentação e conteúdo progressivo.', inputs: 3, outputs: 1, slots: 1 },
+      code:             { selector: 'retro-code',          summary: 'Bloco de código com linguagem, borda opcional e ação de cópia.', inputs: 3, outputs: 0, slots: 0 },
+      'toolbar-search': { selector: 'retro-toolbar-search',      summary: 'Campo de busca pré-configurado para toolbars — wraps RetroInput com prefix $ e clearable.', inputs: 2, outputs: 2, slots: 0 },      'notif-item':             { selector: 'retro-notif-item',         summary: 'Linha individual de notificação com badge de tipo, fonte, timestamp relativo e subtítulo.', inputs: 6, outputs: 1, slots: 0 },
+      'notif-stream':           { selector: 'retro-notif-stream',        summary: 'Painel lateral de notificações com slide-in, ações em lote e projeção de NotifItem.', inputs: 1, outputs: 1, slots: 1 },
+      'priority-indicator':     { selector: 'retro-priority-indicator',        summary: 'Indicador de prioridade em estilo terminal: !!, !, •, · ou — por nível.', inputs: 1, outputs: 0, slots: 0 },
+      'visibility-chip':        { selector: 'retro-visibility-chip',           summary: 'Chip de visibilidade [PUB]/[PRIV]/[INT] com cor semântica por tipo.', inputs: 1, outputs: 0, slots: 0 },
+      'retro-filter-bar':       { selector: 'retro-filter-bar',          summary: 'Barra de filtros genérica com single/multi-select, disabled por tab e slot [filter-end] para controles extras.', inputs: 5, outputs: 2, slots: 1 },      'retro-grid-row':         { selector: 'retro-grid-row',            summary: 'Linha genérica de grid — projeta qualquer filho como célula e herda --grid-cols.', inputs: 0, outputs: 0, slots: 1 },
+      'retro-expandable-row':   { selector: 'retro-expandable-row',      summary: 'Linha expansível com painel de detalhe animado — herda --grid-cols e usa model(expanded).', inputs: 1, outputs: 1, slots: 2 },
+      'retro-paginator':        { selector: 'retro-paginator',           summary: 'Barra de paginação com navegação de páginas, janela inteligente de números e seletor de page size.', inputs: 5, outputs: 2, slots: 0 },
+      'retro-status-bar':       { selector: 'retro-status-bar',          summary: 'Barra de status fixa com versão, itens de sistema e atalhos de teclado.', inputs: 3, outputs: 0, slots: 0 },
+      'retro-data-grid':        { selector: 'retro-data-grid',           summary: 'Grid de dados com sort, busca, filtros por checkbox, regras avançadas (column+op+value), redimensionamento de colunas e visibilidade dinâmica.', inputs: 18, outputs: 11, slots: 2 },      'terminal':               { selector: 'retro-terminal',            summary: 'Terminal interativo com histórico, tab completion, typewriter, cursor de bloco e comandos registráveis.', inputs: 7, outputs: 1, slots: 0 },
+      'segmented':              { selector: 'retro-segmented',           summary: 'Seletor segmentado compatível com CVA — alterna entre opções de texto em layout row ou col.', inputs: 3, outputs: 1, slots: 0 },
+      'button-group':           { selector: 'retro-button-group',        summary: 'Wrapper semântico que agrupa botões adjacentes removendo bordas internas duplicadas.', inputs: 0, outputs: 0, slots: 1 },
+      'api-table':              { selector: 'retro-api-table',                 summary: 'Tabela de referência de API — renderiza cabeçalhos tipados (input/output/method) e projeta linhas via ng-content.', inputs: 3, outputs: 0, slots: 1 },
+      'retro-tabs':             { selector: 'retro-tabs',                summary: 'Barra de abas estilo terminal com disabled, icon, badge por aba, navegação por teclado (← → Home End) e cinco variantes visuais.', inputs: 3, outputs: 1, slots: 1 },
+      'retro-section':          { selector: 'retro-section',             summary: 'Contêiner estilo fieldset com label na borda — versão leve do window frame para agrupar conteúdo internamente.', inputs: 2, outputs: 0, slots: 1 },
     };
 
     return docs[this.activeStory()];
@@ -457,6 +947,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly segOptions  = signal<string[]>(['alpha', 'beta', 'gamma']);
   protected readonly segValue    = signal('alpha');
   protected readonly segDir      = signal<'row' | 'col'>('row');
+  protected readonly segAriaLabel = signal('demo options');
 
   protected readonly tabsVariant      = signal<WindowVariant>('default');
   protected readonly tabsCount        = signal(3);
@@ -611,7 +1102,7 @@ export class UiLibraryPageComponent implements OnInit {
         : null;
 
     return [
-      `<app-retro-window`,
+      `<retro-window`,
       `  title="${this.winTitle()}"`,
       this.winSubtitle()              ? `  subtitle="${this.winSubtitle()}"` : null,
       this.winVariant() !== 'default' ? `  variant="${this.winVariant()}"` : null,
@@ -623,7 +1114,7 @@ export class UiLibraryPageComponent implements OnInit {
       `>`,
       `  <!-- body content -->`,
       this.winFooter() ? `  <div window-footer><!-- footer --></div>` : null,
-      `</app-retro-window>`,
+      `</retro-window>`,
     ].filter((l) => l !== null).join('\n');
   });
 
@@ -645,7 +1136,7 @@ export class UiLibraryPageComponent implements OnInit {
 
   protected readonly btnCode = computed(() => {
     const lines = [
-      `<app-retro-button`,
+      `<retro-button`,
       this.btnVariant() !== 'primary'   ? `  variant="${this.btnVariant()}"` : null,
       this.btnTone()    !== 'default'   ? `  tone="${this.btnTone()}"` : null,
       this.btnSize()    !== 'md'        ? `  size="${this.btnSize()}"` : null,
@@ -659,7 +1150,7 @@ export class UiLibraryPageComponent implements OnInit {
       this.btnFullWidth()               ? `  [fullWidth]="true"` : null,
       `  (pressed)="onClick()">`,
       `  ${this.btnLabel()}`,
-      `</app-retro-button>`,
+      `</retro-button>`,
     ];
     return lines.filter((l) => l !== null).join('\n');
   });
@@ -683,7 +1174,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly inputSizes: RetroInputSize[] = ['sm', 'md', 'lg'];
   protected readonly inputCode = computed(() =>
     [
-      `<app-retro-input`,
+      `<retro-input`,
       `  type="${this.inputType()}"`,
       this.inputSize() !== 'md'  ? `  size="${this.inputSize()}"` : null,
       this.inputPrefix()         ? `  prefix="${this.inputPrefix()}"` : null,
@@ -715,7 +1206,7 @@ export class UiLibraryPageComponent implements OnInit {
   ];
   protected readonly selectCode = computed(() =>
     [
-      `<app-retro-select`,
+      `<retro-select`,
       `  [options]="themeOptions"`,
       `  value="${this.selectValue()}"`,
       this.selectSize() !== 'md' ? `  size="${this.selectSize()}"` : null,
@@ -732,7 +1223,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly rangeDisabled = signal(false);
   protected readonly rangeCode = computed(() =>
     [
-      `<app-retro-range`,
+      `<retro-range`,
       `  [value]="${this.rangeValue()}"`,
       this.rangeMin() !== 0 ? `  [min]="${this.rangeMin()}"` : null,
       this.rangeMax() !== 100 ? `  [max]="${this.rangeMax()}"` : null,
@@ -752,7 +1243,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly checkboxIndeterminate = signal(false);
   protected readonly checkboxCode = computed(() =>
     [
-      `<app-retro-checkbox`,
+      `<retro-checkbox`,
       this.checkboxLabel()          ? `  label="${this.checkboxLabel()}"` : null,
       this.checkboxSize() !== 'md'  ? `  size="${this.checkboxSize()}"` : null,
       `  [checked]="checked"`,
@@ -773,8 +1264,8 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly kbdComboInput = signal('⌘, K');
   protected readonly kbdCode = computed(() =>
     this.kbdComboMode()
-      ? `<app-retro-kbd [keys]="['${this.kbdComboKeys().join("', '")}']" />`
-      : `<app-retro-kbd>${this.kbdSingleKey()}</app-retro-kbd>`,
+      ? `<retro-kbd [keys]="['${this.kbdComboKeys().join("', '")}']" />`
+      : `<retro-kbd>${this.kbdSingleKey()}</retro-kbd>`,
   );
 
   protected updateKbdCombo(raw: string): void {
@@ -789,7 +1280,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly pillStatuses = ['active', 'paused', 'completed', 'archived', 'cursando'] as const;
   protected readonly pillSizes: StatusPillSize[] = ['sm', 'md'];
   protected readonly pillCode = computed(
-    () => `<app-status-pill\n  status="${this.pillStatus()}"\n  size="${this.pillSize()}" />`,
+    () => `<retro-status-pill\n  status="${this.pillStatus()}"\n  size="${this.pillSize()}" />`,
   );
 
   // ── Dot ──────────────────────────────────────────────────────────────────
@@ -801,7 +1292,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly dotSizes: StatusDotSize[] = ['xs', 'sm', 'md'];
   protected readonly dotCode = computed(() =>
     [
-      `<app-status-dot`,
+      `<retro-status-dot`,
       `  status="${this.dotStatus()}"`,
       `  size="${this.dotSize()}"`,
       this.dotPulse() ? `  [pulse]="true"` : null,
@@ -820,7 +1311,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly tagVariants: TagVariant[] = ['default', 'primary', 'success', 'warning', 'danger'];
   protected readonly tagCode = computed(() =>
     [
-      `<app-retro-tag`,
+      `<retro-tag`,
       `  label="${this.tagLabel()}"`,
       this.tagIcon()              ? `  icon="${this.tagIcon()}"` : null,
       this.tagVariant() !== 'default' ? `  variant="${this.tagVariant()}"` : null,
@@ -843,7 +1334,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly statTrends: Array<StatBoxTrend | 'none'> = ['none', 'up', 'down', 'neutral'];
   protected readonly statCode = computed(() =>
     [
-      `<app-stat-box`,
+      `<retro-stat-box`,
       `  label="${this.statLabel()}"`,
       `  value="${this.statValue()}"`,
       this.statSublabel()         ? `  sublabel="${this.statSublabel()}"` : null,
@@ -862,15 +1353,17 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly progressUnit     = signal('%');
   protected readonly progressShowVal  = signal(true);
   protected readonly progressAnimated = signal(false);
+  protected readonly progressAriaLabel = signal('asset loading progress');
   protected readonly progressTones: ProgressTone[] = ['default', 'success', 'warning', 'danger'];
   protected readonly progressCode = computed(() => {
     const indet = this.progressMode() !== 'determinate';
     return [
-      `<app-retro-progress`,
+      `<retro-progress`,
       indet ? `  mode="indeterminate"` : `  [value]="${this.progressValue()}"`,
       this.progressTone() !== 'default' ? `  tone="${this.progressTone()}"` : null,
       this.progressUnit() !== '%'       ? `  unit="${this.progressUnit()}"` : null,
       this.progressLabel()              ? `  label="${this.progressLabel()}"` : null,
+      this.progressAriaLabel()          ? `  ariaLabel="${this.progressAriaLabel()}"` : null,
       !indet && this.progressShowVal()  ? `  [showValue]="true"` : null,
       !indet && this.progressAnimated() ? `  [animated]="true"` : null,
       `/>`,
@@ -886,7 +1379,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly asciiShowValue  = signal(true);
   protected readonly asciiCode = computed(() =>
     [
-      `<app-ascii-bar`,
+      `<retro-ascii-bar`,
       `  [value]="${this.asciiValue()}"`,
       this.asciiWidth() !== 20       ? `  [width]="${this.asciiWidth()}"` : null,
       this.asciiFilledChar() !== '█' ? `  filledChar="${this.asciiFilledChar()}"` : null,
@@ -925,7 +1418,7 @@ export class UiLibraryPageComponent implements OnInit {
     const life        = this.toastLife();
     const lifeSuffix  = sticky ? `, 0  // sticky` : life !== 3400 ? `, ${life}` : '';
     return [
-      `<app-retro-toast`,
+      `<retro-toast`,
       this.toastPosition() !== 'bottom-right' ? `  position="${this.toastPosition()}"` : null,
       this.toastMaxVisible() !== 5 ? `  [maxVisible]="${this.toastMaxVisible()}"` : null,
       `  (toastClosed)="onToastClosed($event)"`,
@@ -975,7 +1468,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly msgVariants: MessageVariant[]    = ['filled', 'outlined', 'ghost'];
   protected readonly msgCode = computed(() =>
     [
-      `<app-retro-message`,
+      `<retro-message`,
       `  severity="${this.msgSeverity()}"`,
       this.msgVariant() !== 'filled'    ? `  variant="${this.msgVariant()}"` : null,
       this.msgText()                    ? `  text="${this.msgText()}"` : null,
@@ -993,14 +1486,16 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly skelShape     = signal<SkeletonShape>('rectangle');
   protected readonly skelAnimation = signal<SkeletonAnimation>('wave');
   protected readonly skelCount     = signal(1);
+  protected readonly skelAriaLabel = signal('');
   protected readonly skelCode = computed(() =>
     [
-      `<app-retro-skeleton`,
+      `<retro-skeleton`,
       this.skelWidth()  !== '100%'       ? `  width="${this.skelWidth()}"` : null,
       this.skelHeight() !== '14px'       ? `  height="${this.skelHeight()}"` : null,
       this.skelShape()  !== 'rectangle'  ? `  shape="${this.skelShape()}"` : null,
       this.skelAnimation() !== 'wave'    ? `  animation="${this.skelAnimation()}"` : null,
       this.skelCount() !== 1             ? `  [count]="${this.skelCount()}"` : null,
+      this.skelAriaLabel()               ? `  ariaLabel="${this.skelAriaLabel()}"` : null,
       `/>`,
     ].filter((l) => l !== null).join('\n'),
   );
@@ -1016,7 +1511,7 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly modalShowCloseButton = signal(true);
   protected readonly modalCode = computed(() =>
     [
-      `<app-retro-modal`,
+      `<retro-modal`,
       `  [open]="isOpen"`,
       `  title="${this.modalTitle()}"`,
       this.modalSubtitle() ? `  subtitle="${this.modalSubtitle()}"` : null,
@@ -1025,7 +1520,7 @@ export class UiLibraryPageComponent implements OnInit {
       `  [showCloseButton]="${this.modalShowCloseButton()}"`,
       `  (closed)="close()">`,
       `  <!-- [modal-body] / [modal-actions] -->`,
-      `</app-retro-modal>`,
+      `</retro-modal>`,
     ].filter((l) => l !== null).join('\n'),
   );
 
@@ -1036,13 +1531,13 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly collapsibleDisabled  = signal(false);
   protected readonly collapsibleCode = computed(() =>
     [
-      `<app-retro-collapsible`,
+      `<retro-collapsible`,
       `  title="${this.collapsibleTitle()}"`,
       this.collapsibleCollapsed() ? `  [(collapsed)]="isCollapsed"` : null,
       this.collapsibleDisabled()  ? `  [disabled]="true"` : null,
       `>`,
       `  <!-- content -->`,
-      `</app-retro-collapsible>`,
+      `</retro-collapsible>`,
     ].filter((l) => l !== null).join('\n'),
   );
 
@@ -1056,7 +1551,7 @@ export class UiLibraryPageComponent implements OnInit {
   standalone: true,
   imports: [RetroCodeComponent],
   template: \`
-    <app-retro-code
+    <retro-code
       [code]="snippet"
       language="typescript"
     />
@@ -1065,20 +1560,20 @@ export class UiLibraryPageComponent implements OnInit {
 export class MyPage {
   readonly snippet = 'const x = 42;';
 }`,
-    angular: `<app-retro-window title="~/my-feature">
-  <app-retro-input
+    angular: `<retro-window title="~/my-feature">
+  <retro-input
     prefix="$"
     placeholder="grep..."
     [clearable]="true"
     (valueChange)="onSearch($event)"
   />
-  <app-retro-button
+  <retro-button
     variant="primary"
     [loading]="saving()"
     (pressed)="save()">
     save
-  </app-retro-button>
-</app-retro-window>`,
+  </retro-button>
+</retro-window>`,
     bash: `$ ng generate component shared/ui/my-component \\
     --standalone \\
     --change-detection OnPush
@@ -1102,7 +1597,7 @@ const answer = 42;`,
   );
   protected readonly codeStoryCode = computed(() =>
     [
-      `<app-retro-code`,
+      `<retro-code`,
       `  [code]="snippet"`,
       this.codeLanguage() ? `  language="${this.codeLanguage()}"` : null,
       !this.codeFramed()  ? `  [framed]="false"` : null,
@@ -1117,7 +1612,7 @@ const answer = 42;`,
 
   protected readonly toolbarSearchCode = computed(() =>
     [
-      `<app-toolbar-search`,
+      `<retro-toolbar-search`,
       this.toolbarSearchPlaceholder() !== 'search...' ? `  placeholder="${this.toolbarSearchPlaceholder()}"` : null,
       `  [value]="searchQuery"`,
       `  (valueChange)="searchQuery = $event"`,
@@ -1138,7 +1633,7 @@ const answer = 42;`,
 
   protected readonly notifItemCode = computed(() =>
     [
-      `<app-retro-notif-item`,
+      `<retro-notif-item`,
       `  type="${this.notifItemType()}"`,
       `  source="${this.notifItemSource()}"`,
       `  [timestamp]="item.timestamp"`,
@@ -1154,9 +1649,9 @@ const answer = 42;`,
 
   protected readonly notifStreamOpen = signal(false);
 
-  protected readonly notifStreamCode = `<app-retro-notif-stream [open]="streamOpen" (closed)="streamOpen = false">
+  protected readonly notifStreamCode = `<retro-notif-stream [open]="streamOpen" (closed)="streamOpen = false">
   @for (item of notifService.items(); track item.id) {
-    <app-retro-notif-item
+    <retro-notif-item
       [type]="item.type"
       [source]="item.source"
       [timestamp]="item.timestamp"
@@ -1166,7 +1661,7 @@ const answer = 42;`,
       (itemRead)="notifService.markRead(item.id)"
     />
   }
-</app-retro-notif-stream>`;
+</retro-notif-stream>`;
 
   protected addSampleNotif(): void {
     const samples: Array<Parameters<NotifService['add']>[0]> = [
@@ -1311,16 +1806,841 @@ import {
   standalone: true,
   imports: [RetroButtonComponent, RetroInputComponent, RetroWindowComponent],
   template: \`
-    <app-retro-window title="~/my-feature">
-      <app-retro-input prefix="$" placeholder="grep..." [clearable]="true"
+    <retro-window title="~/my-feature">
+      <retro-input prefix="$" placeholder="grep..." [clearable]="true"
         (valueChange)="onSearch($event)" />
-      <app-retro-button variant="primary" [loading]="saving()" (pressed)="save()">
+      <retro-button variant="primary" [loading]="saving()" (pressed)="save()">
         save
-      </app-retro-button>
-    </app-retro-window>
+      </retro-button>
+    </retro-window>
   \`,
 })
 export class MyFeaturePage {}`;
+
+  protected readonly componentDocs: Record<StoryId, ComponentDoc> = {
+    'foundations-colors':     { badges: ['standalone'], description: 'Semantic color tokens mapped from theme primitives. Mode (light/dark) controls the surface mapping without touching components.', a11y: [], practices: [] },
+    'foundations-tokens':     { badges: ['standalone'], description: 'Primitive and semantic token layers — how theme values cascade to component styles.', a11y: [], practices: [] },
+    'foundations-typography': { badges: ['standalone'], description: 'Type scale, font families, and text token conventions used across all components.', a11y: [], practices: [] },
+    'foundations-spacing':    { badges: ['standalone'], description: 'Spacing scale and density conventions for consistent layout rhythm.', a11y: [], practices: [] },
+    'foundations-borders':    { badges: ['standalone'], description: 'Border widths, radii, and edge treatment patterns.', a11y: [], practices: [] },
+    'foundations-shadows':    { badges: ['standalone'], description: 'Shadow tokens for depth, elevation, and glow effects.', a11y: [], practices: [] },
+    'foundations-states':     { badges: ['standalone'], description: 'Interactive state tokens — hover, focus, active, disabled conventions.', a11y: [], practices: [] },
+    'foundations-theme':      { badges: ['standalone'], description: 'Theme architecture: primitives, semantic mapping, mode switching, and accent colors.', a11y: [], practices: [] },
+    'foundations-a11y':       { badges: ['standalone'], description: 'Accessibility guidelines, contrast requirements, keyboard navigation patterns, and ARIA conventions.', a11y: [], practices: [] },
+
+    win: {
+      badges: ['standalone', 'layout', 'onpush', 'composable'],
+      description: 'Janela base para shells, painéis e blocos do design system retrô. Suporta variantes visuais, controles de janela, status, scroll e footer projetável.',
+      inputs: [
+        { name: 'title', type: 'string', default: "''", desc: 'Título exibido na barra de janela.', required: true },
+        { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo opcional ao lado do título.' },
+        { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
+        { name: 'padding', type: 'WindowPadding', default: "'md'", desc: 'Espaçamento interno: none, sm, md, lg.' },
+        { name: 'status', type: 'WindowStatus | null', default: 'null', desc: 'Status exibido no canto: idle, active, loading, error.' },
+        { name: 'controls', type: 'WindowControl[]', default: '[]', desc: 'Botões de controle: minimize, maximize, close.' },
+        { name: 'scrollable', type: 'boolean', default: 'false', desc: 'Habilita scroll interno quando o conteúdo excede a altura.' },
+        { name: 'loading', type: 'boolean', default: 'false', desc: 'Substitui o conteúdo por um skeleton de carregamento.' },
+        { name: 'showControls', type: 'boolean', default: 'false', desc: 'Atalho para exibir os três controles padrão.' },
+      ],
+      outputs: [
+        { name: 'minimize', type: 'void', default: '-', desc: 'Emitido ao clicar no botão minimizar.' },
+        { name: 'maximize', type: 'void', default: '-', desc: 'Emitido ao clicar no botão maximizar.' },
+        { name: 'close', type: 'void', default: '-', desc: 'Emitido ao clicar no botão fechar.' },
+        { name: 'controlClick', type: 'WindowControl', default: '-', desc: 'Emitido ao clicar em qualquer controle, com o nome do controle.' },
+      ],
+      slots: '<code>[window-footer]</code> para conteúdo de rodapé fixo.',
+      a11y: [
+        'Controles de janela possuem <code>aria-label</code> descritivo.',
+        'Foco visível nos botões de controle via <code>--focus-ring</code>.',
+      ],
+      practices: [
+        'Use <code>variant="terminal"</code> para painéis de log ou shell.',
+        'Use <code>variant="alert"</code> para modais de confirmação ou erros.',
+        'Evite aninhar múltiplas janelas — prefira modais para diálogos.',
+      ],
+    },
+
+    button: {
+      badges: ['standalone', 'interactive', 'onpush'],
+      description: 'Botão principal da biblioteca com variantes (primary, secondary, ghost), tons semânticos, loading, ícone e link rendering.',
+      inputs: [
+        { name: 'variant', type: 'RetroButtonVariant', default: "'primary'", desc: 'Estrutura visual: primary, secondary, ghost.' },
+        { name: 'tone', type: 'RetroButtonTone', default: "'default'", desc: 'Cor semântica: default, success, warning, danger.' },
+        { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", desc: 'Tamanho do botão.' },
+        { name: 'icon', type: 'string', default: "''", desc: 'Caractere/glyph exibido como ícone.' },
+        { name: 'iconPos', type: "'left' | 'right'", default: "'left'", desc: 'Posição do ícone relativo ao texto.' },
+        { name: 'badge', type: 'string', default: "''", desc: 'Texto curto exibido ao lado do label.' },
+        { name: 'href', type: 'string', default: "''", desc: 'URL para renderizar como âncora (<a>) ao invés de <button>.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação e aplica estilo visual.' },
+        { name: 'loading', type: 'boolean', default: 'false', desc: 'Substitui o conteúdo por um spinner.' },
+        { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+      ],
+      outputs: [
+        { name: 'pressed', type: 'MouseEvent', default: '-', desc: 'Emitido ao clicar no botão (não emitido se disabled ou loading).' },
+      ],
+      cva: ['Não implementa CVA — usa output para eventos.'],
+      a11y: [
+        '<code>disabled</code> desabilita interação real, não apenas visual.',
+        'Estado <code>loading</code> adiciona <code>aria-busy="true"</code>.',
+        'Foco visível com <code>--focus-ring</code>.',
+      ],
+      practices: [
+        'Use <code>variant="ghost"</code> para ações secundárias ou de cancelamento.',
+        'Use <code>tone="danger"</code> com <code>variant="secondary"</code> para ações destrutivas.',
+        'Evite múltiplos botões <code>primary</code> no mesmo grupo.',
+      ],
+    },
+
+    input: {
+      badges: ['standalone', 'form', 'cva', 'onpush', 'a11y'],
+      description: 'Campo de entrada retrô com prefixo, sufixo, clearable, estados visuais (invalid, disabled, readonly) e suporte a CVA.',
+      inputs: [
+        { name: 'type', type: 'RetroInputType', default: "'text'", desc: 'Tipo do input: text, search, number, email, password.' },
+        { name: 'size', type: 'RetroInputSize', default: "'md'", desc: 'Tamanho: sm, md, lg.' },
+        { name: 'prefix', type: 'string', default: "''", desc: 'Texto ou glyph exibido antes do valor.' },
+        { name: 'suffix', type: 'string', default: "''", desc: 'Texto ou glyph exibido após o valor.' },
+        { name: 'placeholder', type: 'string', default: "''", desc: 'Placeholder do campo.' },
+        { name: 'value', type: 'string', default: "''", desc: 'Valor atual do campo.' },
+        { name: 'clearable', type: 'boolean', default: 'false', desc: 'Exibe botão para limpar o valor.' },
+        { name: 'readonly', type: 'boolean', default: 'false', desc: 'Campo somente leitura.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
+        { name: 'invalid', type: 'boolean', default: 'false', desc: 'Aplica estilo visual de erro.' },
+        { name: 'errorMessage', type: 'string', default: "''", desc: 'Mensagem de erro exibida abaixo do campo.' },
+        { name: 'helpText', type: 'string', default: "''", desc: 'Texto auxiliar exibido abaixo do campo.' },
+        { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+      ],
+      outputs: [
+        { name: 'valueChange', type: 'string', default: '-', desc: 'Emite o novo valor a cada mudança.' },
+        { name: 'blur', type: 'FocusEvent', default: '-', desc: 'Emite ao perder o foco.' },
+      ],
+      cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
+      a11y: [
+        '<code>aria-invalid</code> sincronizado com estado <code>invalid</code>.',
+        '<code>aria-describedby</code> associado a <code>errorMessage</code> e <code>helpText</code>.',
+        'Foco visível com <code>--focus-ring</code>.',
+      ],
+      practices: [
+        'Use <code>prefix="$"</code> para campos de comando ou terminal.',
+        'Sempre forneça <code>errorMessage</code> quando <code>invalid</code> estiver ativo.',
+        'Evite usar <code>type="number"</code> para valores monetários — prefira text com máscara.',
+      ],
+    },
+
+    select: {
+      badges: ['standalone', 'form', 'cva', 'onpush', 'a11y'],
+      description: 'Select retrô para listas pequenas e configurações rápidas do sistema. Suporta opções com label, value e separator.',
+      inputs: [
+        { name: 'options', type: '{ label: string; value: string; separator?: boolean }[]', default: '[]', desc: 'Lista de opções exibidas.', required: true },
+        { name: 'value', type: 'string', default: "''", desc: 'Valor selecionado.' },
+        { name: 'size', type: "'sm' | 'md'", default: "'md'", desc: 'Tamanho do select.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
+        { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+      ],
+      outputs: [
+        { name: 'valueChange', type: 'string', default: '-', desc: 'Emite o novo valor selecionado.' },
+      ],
+      cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
+      a11y: [
+        'Opções separadoras possuem <code>role="separator"</code>.',
+        'Foco visível no dropdown via <code>--focus-ring</code>.',
+      ],
+      practices: [
+        'Use <code>size="sm"</code> em toolbars e controles compactos.',
+        'Agrupe opções relacionadas com <code>separator: true</code>.',
+      ],
+    },
+
+    range: {
+      badges: ['standalone', 'form', 'cva', 'onpush', 'a11y'],
+      description: 'Slider retrô para ajustes de valor contínuo com feedback imediato. Suporta min, max, step e disabled.',
+      inputs: [
+        { name: 'value', type: 'number', default: '0', desc: 'Valor atual do slider.' },
+        { name: 'min', type: 'number', default: '0', desc: 'Valor mínimo.' },
+        { name: 'max', type: 'number', default: '100', desc: 'Valor máximo.' },
+        { name: 'step', type: 'number', default: '1', desc: 'Incremento entre valores.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
+        { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+      ],
+      outputs: [
+        { name: 'valueChange', type: 'number', default: '-', desc: 'Emite o novo valor ao soltar o slider ou usar teclas.' },
+      ],
+      cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
+      a11y: [
+        '<code>aria-valuemin</code>, <code>aria-valuemax</code> e <code>aria-valuenow</code> sincronizados.',
+        'Navegável por teclado com setas direcionais.',
+      ],
+      practices: [
+        'Use <code>step</code> para restringir valores a intervalos discretos.',
+        'Exiba o valor atual em um label adjacente para melhor usabilidade.',
+      ],
+    },
+
+    checkbox: {
+      badges: ['standalone', 'form', 'cva', 'onpush', 'a11y'],
+      description: 'Checkbox standalone com estados checked, readonly, invalid e indeterminate. Suporta CVA e label associada.',
+      inputs: [
+        { name: 'label', type: 'string', default: "''", desc: 'Texto do label exibido ao lado do checkbox.' },
+        { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", desc: 'Tamanho do checkbox.' },
+        { name: 'checked', type: 'boolean', default: 'false', desc: 'Estado marcado.' },
+        { name: 'readonly', type: 'boolean', default: 'false', desc: 'Somente leitura — não permite alterar o estado.' },
+        { name: 'invalid', type: 'boolean', default: 'false', desc: 'Aplica estilo visual de erro.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
+        { name: 'indeterminate', type: 'boolean', default: 'false', desc: 'Estado indeterminado (ex: seleção parcial em lista).' },
+      ],
+      outputs: [
+        { name: 'checkedChange', type: 'boolean', default: '-', desc: 'Emite o novo estado ao interagir.' },
+        { name: 'blur', type: 'FocusEvent', default: '-', desc: 'Emite ao perder o foco.' },
+      ],
+      cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
+      a11y: [
+        '<code>aria-checked</code> reflete <code>checked</code> ou <code>indeterminate</code>.',
+        'Label clicável associada via <code>for</code> + <code>id</code>.',
+        'Foco visível com <code>--focus-ring</code>.',
+      ],
+      practices: [
+        'Use <code>indeterminate</code> para checkboxes de cabeçalho em listas com seleção parcial.',
+        'Evite usar <code>readonly</code> sem indicar visualmente que o campo não é editável.',
+      ],
+    },
+
+    kbd: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Representação visual de teclas únicas ou combos de atalhos. Estilo retrô com borda elevada.',
+      inputs: [
+        { name: 'keys', type: 'string[]', default: '[]', desc: 'Array de teclas para exibir como combo.' },
+      ],
+      outputs: [],
+      slots: 'Content projection para tecla única quando <code>keys</code> não é fornecido.',
+      a11y: [
+        'Usa <code>&lt;kbd&gt;</code> semanticamente.',
+      ],
+      practices: [
+        'Use para atalhos de teclado em tooltips ou documentação.',
+        'Prefira teclas curtas — combos muito longos quebram layout.',
+      ],
+    },
+
+    pill: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Pill compacta para estados de workflow e status categóricos.',
+      inputs: [
+        { name: 'status', type: 'string', default: "''", desc: 'Status que determina a cor semântica.', required: true },
+        { name: 'size', type: 'StatusPillSize', default: "'sm'", desc: 'Tamanho: sm, md.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
+      ],
+      outputs: [],
+      a11y: [
+        'Recebe <code>aria-label</code> quando o texto não é autoexplicativo.',
+      ],
+      practices: [
+        'Use para status de workflow (active, paused, completed).',
+        'Evite mais de 2 tamanhos diferentes em uma mesma tabela.',
+      ],
+    },
+
+    dot: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Indicador pontual de estado com opção de pulso para atividade.',
+      inputs: [
+        { name: 'status', type: 'string', default: "'default'", desc: 'Status que determina a cor.' },
+        { name: 'size', type: 'StatusDotSize', default: "'sm'", desc: 'Tamanho: xs, sm, md.' },
+        { name: 'pulse', type: 'boolean', default: 'false', desc: 'Animação de pulso contínuo.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível.' },
+      ],
+      outputs: [],
+      a11y: [
+        '<code>aria-label</code> obrigatório quando usado sem texto adjacente.',
+      ],
+      practices: [
+        'Use <code>pulse</code> para indicar atividade em tempo real.',
+        'Combine com texto descritivo ao invés de depender apenas da cor.',
+      ],
+    },
+
+    tag: {
+      badges: ['standalone', 'interactive', 'onpush'],
+      description: 'Tag textual para labels, filtros e taxonomias do projeto. Suporta remoção e ícone.',
+      inputs: [
+        { name: 'label', type: 'string', default: "''", desc: 'Texto da tag.', required: true },
+        { name: 'icon', type: 'string', default: "''", desc: 'Glyph exibido antes do texto.' },
+        { name: 'variant', type: 'TagVariant', default: "'default'", desc: 'Variante visual: default, primary, success, warning, danger.' },
+        { name: 'size', type: "'sm' | 'md'", default: "'md'", desc: 'Tamanho da tag.' },
+        { name: 'removable', type: 'boolean', default: 'false', desc: 'Exibe botão de remoção (×).' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita remoção e aplica opacidade.' },
+      ],
+      outputs: [
+        { name: 'removed', type: 'void', default: '-', desc: 'Emitido ao clicar no botão de remoção.' },
+      ],
+      a11y: [
+        'Botão de remoção possui <code>aria-label</code> descritivo.',
+        'Foco visível no botão de remoção.',
+      ],
+      practices: [
+        'Use <code>removable</code> em filtros ativos para permitir limpeza rápida.',
+        'Agrupe tags relacionadas horizontalmente com gap de 6–8px.',
+      ],
+    },
+
+    stat: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Caixa métrica para KPIs, contadores e resumos do dashboard.',
+      inputs: [
+        { name: 'label', type: 'string', default: "''", desc: 'Label descritivo da métrica.', required: true },
+        { name: 'value', type: 'string | number', default: "''", desc: 'Valor principal exibido.', required: true },
+        { name: 'sublabel', type: 'string', default: "''", desc: 'Texto secundário abaixo do valor.' },
+        { name: 'tone', type: 'StatBoxTone', default: "'default'", desc: 'Tom semântico: default, success, warning, danger.' },
+        { name: 'trend', type: 'StatBoxTrend', default: 'undefined', desc: 'Indicador de tendência: up, down, neutral.' },
+      ],
+      outputs: [],
+      a11y: [
+        'Estrutura semântica com <code>aria-label</code> composto por label + value.',
+      ],
+      practices: [
+        'Use <code>trend</code> para indicar variação em relação ao período anterior.',
+        'Mantenha labels curtos — máximo 2 palavras.',
+      ],
+    },
+
+    progress: {
+      badges: ['standalone', 'feedback', 'onpush'],
+      description: 'Barra de progresso com modos determinate e indeterminate.',
+      inputs: [
+        { name: 'value', type: 'number', default: '0', desc: 'Valor atual (0–100) no modo determinate.' },
+        { name: 'mode', type: 'ProgressMode', default: "'determinate'", desc: 'Modo: determinate ou indeterminate.' },
+        { name: 'tone', type: 'ProgressTone', default: "'default'", desc: 'Tom semântico: default, success, warning, danger.' },
+        { name: 'unit', type: 'string', default: "'%'", desc: 'Unidade exibida ao lado do valor.' },
+        { name: 'label', type: 'string', default: "''", desc: 'Label descritivo acima da barra.' },
+        { name: 'showValue', type: 'boolean', default: 'true', desc: 'Exibe o valor numérico.' },
+        { name: 'animated', type: 'boolean', default: 'false', desc: 'Animação suave ao mudar o valor.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
+      ],
+      outputs: [],
+      a11y: [
+        '<code>role="progressbar"</code> com <code>aria-valuenow</code>, <code>aria-valuemin</code> e <code>aria-valuemax</code>.',
+        'Label acessível via <code>aria-label</code> ou <code>aria-labelledby</code>.',
+      ],
+      practices: [
+        'Use <code>mode="indeterminate"</code> quando o tempo total é desconhecido.',
+        'Sempre forneça <code>label</code> ou <code>ariaLabel</code> para contexto.',
+      ],
+    },
+
+    ascii: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Barra em estilo terminal usando caracteres ASCII configuráveis.',
+      inputs: [
+        { name: 'value', type: 'number', default: '0', desc: 'Valor atual (0–100).', required: true },
+        { name: 'width', type: 'number', default: '20', desc: 'Largura da barra em caracteres.' },
+        { name: 'filledChar', type: 'string', default: "'█'", desc: 'Caractere para a parte preenchida.' },
+        { name: 'emptyChar', type: 'string', default: "'░'", desc: 'Caractere para a parte vazia.' },
+        { name: 'showValue', type: 'boolean', default: 'true', desc: 'Exibe o valor percentual ao lado.' },
+      ],
+      outputs: [],
+      a11y: [
+        'Usa <code>role="img"</code> com <code>aria-label</code> descrevendo o valor.',
+      ],
+      practices: [
+        'Ideal para dashboards com estética terminal pura.',
+        'Ajuste <code>width</code> conforme o espaço disponível em colunas.',
+      ],
+    },
+
+    toast: {
+      badges: ['standalone', 'feedback', 'onpush'],
+      description: 'Host visual para notificações emitidas pelo ToastService. Gerencia fila, posição e lifecycle.',
+      inputs: [
+        { name: 'position', type: 'ToastPosition', default: "'bottom-right'", desc: 'Posição do container de toasts na tela.' },
+        { name: 'maxVisible', type: 'number', default: '5', desc: 'Número máximo de toasts visíveis simultaneamente.' },
+      ],
+      outputs: [
+        { name: 'toastClosed', type: 'string', default: '-', desc: 'Emitido quando um toast é fechado.' },
+      ],
+      a11y: [
+        'Toasts anunciam novas mensagens via <code>aria-live="polite"</code>.',
+        'Botão de fechar possui <code>aria-label</code>.',
+      ],
+      practices: [
+        'Instancie uma única vez na raiz da aplicação.',
+        'Use <code>sticky: true</code> para erros que exigem ação do usuário.',
+      ],
+    },
+
+    message: {
+      badges: ['standalone', 'feedback', 'onpush'],
+      description: 'Mensagem inline com severidade, variante e fechamento opcional.',
+      inputs: [
+        { name: 'severity', type: 'MessageSeverity', default: "'info'", desc: 'Severidade: info, success, warning, error.' },
+        { name: 'variant', type: 'MessageVariant', default: "'filled'", desc: 'Variante visual: filled, outlined, ghost.' },
+        { name: 'text', type: 'string', default: "''", desc: 'Texto da mensagem.', required: true },
+        { name: 'icon', type: 'string', default: "''", desc: 'Glyph override para o ícone.' },
+        { name: 'closable', type: 'boolean', default: 'false', desc: 'Exibe botão de fechar.' },
+      ],
+      outputs: [
+        { name: 'msgClosed', type: 'void', default: '-', desc: 'Emitido ao clicar no botão de fechar.' },
+      ],
+      slots: 'Content projection para conteúdo rico além do texto simples.',
+      a11y: [
+        '<code>role="alert"</code> para severidades <code>error</code> e <code>warning</code>.',
+        'Botão de fechar com <code>aria-label</code>.',
+      ],
+      practices: [
+        'Use <code>variant="outlined"</code> em formulários para não competir visualmente com campos.',
+        'Evite mensagens auto-dismissing sem botão de fechar — prefira Toast para isso.',
+      ],
+    },
+
+    skeleton: {
+      badges: ['standalone', 'feedback', 'onpush'],
+      description: 'Placeholder visual para carregamento com wave, pulse ou estado estático.',
+      inputs: [
+        { name: 'width', type: 'string', default: "'100%'", desc: 'Largura do skeleton.' },
+        { name: 'height', type: 'string', default: "'14px'", desc: 'Altura do skeleton.' },
+        { name: 'shape', type: 'SkeletonShape', default: "'rectangle'", desc: 'Formato: rectangle, circle.' },
+        { name: 'animation', type: 'SkeletonAnimation', default: "'wave'", desc: 'Animação: wave, pulse, none.' },
+        { name: 'count', type: 'number', default: '1', desc: 'Número de repetições.' },
+        { name: 'ariaLabel', type: 'string', default: "'loading'", desc: 'Label acessível.' },
+      ],
+      outputs: [],
+      a11y: [
+        '<code>aria-busy="true"</code> no container pai é recomendado.',
+        '<code>aria-label</code> descreve o estado de carregamento.',
+      ],
+      practices: [
+        'Use <code>shape="circle"</code> para avatares e ícones de perfil.',
+        'Combine múltiplos skeletons com <code>count</code> para listas.',
+      ],
+    },
+
+    modal: {
+      badges: ['standalone', 'layout', 'onpush', 'a11y'],
+      description: 'Modal standalone com overlay, backdrop close, teclado e slots nomeados.',
+      inputs: [
+        { name: 'open', type: 'boolean', default: 'false', desc: 'Controla a visibilidade do modal.', required: true },
+        { name: 'title', type: 'string', default: "''", desc: 'Título do modal.' },
+        { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo do modal.' },
+        { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", desc: 'Tamanho do modal.' },
+        { name: 'closeOnBackdrop', type: 'boolean', default: 'true', desc: 'Fecha ao clicar no backdrop.' },
+        { name: 'showCloseButton', type: 'boolean', default: 'true', desc: 'Exibe botão de fechar no header.' },
+      ],
+      outputs: [
+        { name: 'closed', type: 'void', default: '-', desc: 'Emitido ao fechar o modal.' },
+      ],
+      slots: '<code>[modal-body]</code> para conteúdo principal. <code>[modal-actions]</code> para botões de ação.',
+      a11y: [
+        'Foco preso dentro do modal enquanto aberto.',
+        '<code>Escape</code> fecha o modal.',
+        '<code>role="dialog"</code> e <code>aria-modal="true"</code>.',
+      ],
+      practices: [
+        'Sempre forneça um botão de ação primária e um de cancelamento.',
+        'Use <code>size="sm"</code> para confirmações simples e <code>size="lg"</code> para formulários.',
+      ],
+    },
+
+    collapsible: {
+      badges: ['standalone', 'layout', 'onpush'],
+      description: 'Bloco expansível para seções de documentação e conteúdo progressivo.',
+      inputs: [
+        { name: 'title', type: 'string', default: "''", desc: 'Título exibido no cabeçalho.', required: true },
+        { name: 'collapsed', type: 'boolean', default: 'false', desc: 'Estado recolhido.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita expansão.' },
+      ],
+      outputs: [
+        { name: 'collapsedChange', type: 'boolean', default: '-', desc: 'Emite ao alternar o estado.' },
+      ],
+      slots: 'Content projection para o corpo expansível.',
+      a11y: [
+        'Botão de toggle possui <code>aria-expanded</code>.',
+        'Foco visível no cabeçalho interativo.',
+      ],
+      practices: [
+        'Use para FAQs, detalhes técnicos ou configurações avançadas.',
+        'Evite aninhar mais de 2 níveis de collapsible.',
+      ],
+    },
+
+    code: {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Bloco de código com linguagem, borda opcional e ação de cópia.',
+      inputs: [
+        { name: 'code', type: 'string', default: "''", desc: 'Código a ser exibido.', required: true },
+        { name: 'language', type: 'string', default: "''", desc: 'Linguagem para syntax highlighting.' },
+        { name: 'framed', type: 'boolean', default: 'true', desc: 'Exibe borda e fundo estilo window frame.' },
+      ],
+      outputs: [],
+      a11y: [
+        'Botão de cópia possui <code>aria-label</code>.',
+      ],
+      practices: [
+        'Use <code>framed="false"</code> para snippets inline em cards.',
+        'Especifique <code>language</code> para melhor legibilidade.',
+      ],
+    },
+
+    'toolbar-search': {
+      badges: ['standalone', 'form', 'onpush'],
+      description: 'Campo de busca pré-configurado para toolbars — wraps RetroInput com prefix $ e clearable.',
+      inputs: [
+        { name: 'value', type: 'string', default: "''", desc: 'Valor atual da busca.' },
+        { name: 'placeholder', type: 'string', default: "'search...'", desc: 'Placeholder do campo.' },
+      ],
+      outputs: [
+        { name: 'valueChange', type: 'string', default: '-', desc: 'Emite ao digitar.' },
+        { name: 'cleared', type: 'void', default: '-', desc: 'Emitido ao limpar o campo.' },
+      ],
+      a11y: [
+        'Herda acessibilidade do RetroInput.',
+      ],
+      practices: [
+        'Use em toolbars de grid e listas.',
+        'Capture <code>cleared</code> para resetar filtros associados.',
+      ],
+    },
+
+    'notif-item': {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Linha individual de notificação com badge de tipo, fonte, timestamp relativo e subtítulo.',
+      inputs: [
+        { name: 'type', type: 'NotifType', default: "'event'", desc: 'Tipo visual: event, build, alert.' },
+        { name: 'source', type: 'NotifSource', default: "'webhook'", desc: 'Fonte da notificação: webhook, email, system.' },
+        { name: 'timestamp', type: 'Date', default: 'new Date()', desc: 'Data/hora da notificação.', required: true },
+        { name: 'title', type: 'string', default: "''", desc: 'Título da notificação.', required: true },
+        { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo descritivo.' },
+        { name: 'read', type: 'boolean', default: 'false', desc: 'Estado lido/não lido.' },
+      ],
+      outputs: [
+        { name: 'itemRead', type: 'void', default: '-', desc: 'Emitido ao marcar como lido.' },
+      ],
+      a11y: [
+        'Timestamp relativo possui <code>title</code> com data absoluta.',
+        'Botão de marcar lido possui <code>aria-label</code>.',
+      ],
+      practices: [
+        'Use dentro de <code>NotifStream</code> para painéis laterais.',
+        'Mantenha títulos curtos — máximo 60 caracteres.',
+      ],
+    },
+
+    'notif-stream': {
+      badges: ['standalone', 'feedback', 'onpush', 'composable'],
+      description: 'Painel lateral de notificações com slide-in, ações em lote e projeção de NotifItem.',
+      inputs: [
+        { name: 'open', type: 'boolean', default: 'false', desc: 'Controla a visibilidade do painel.', required: true },
+      ],
+      outputs: [
+        { name: 'closed', type: 'void', default: '-', desc: 'Emitido ao fechar o painel.' },
+      ],
+      slots: 'Content projection para <code>NotifItem</code> ou conteúdo customizado.',
+      a11y: [
+        'Foco preso dentro do painel enquanto aberto.',
+        '<code>Escape</code> fecha o painel.',
+      ],
+      practices: [
+        'Instancie uma única vez na raiz da aplicação.',
+        'Use <code>NotifService</code> para gerenciar o estado das notificações.',
+      ],
+    },
+
+    'priority-indicator': {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Indicador de prioridade em estilo terminal: !!, !, •, · ou — por nível.',
+      inputs: [
+        { name: 'priority', type: 'Priority', default: "'none'", desc: 'Nível: critical, high, medium, low, none.', required: true },
+      ],
+      outputs: [],
+      a11y: [
+        '<code>aria-label</code> descreve o nível textualmente.',
+      ],
+      practices: [
+        'Use em grids de tarefas para scan rápido.',
+        'Não substitua label textual por este indicador sozinho.',
+      ],
+    },
+
+    'visibility-chip': {
+      badges: ['standalone', 'display', 'onpush'],
+      description: 'Chip de visibilidade [PUB]/[PRIV]/[INT] com cor semântica por tipo.',
+      inputs: [
+        { name: 'visibility', type: 'Visibility', default: "'public'", desc: 'Tipo: public, private, internal.', required: true },
+      ],
+      outputs: [],
+      a11y: [
+        '<code>aria-label</code> descreve o tipo de visibilidade.',
+      ],
+      practices: [
+        'Use ao lado do título de projetos ou repositórios.',
+      ],
+    },
+
+    'retro-filter-bar': {
+      badges: ['standalone', 'interactive', 'onpush', 'composable'],
+      description: 'Barra de filtros genérica com single/multi-select, disabled por tab e slot [filter-end] para controles extras.',
+      inputs: [
+        { name: 'tabs', type: 'FilterTab[]', default: '[]', desc: 'Definição das abas de filtro.', required: true },
+        { name: 'active', type: 'string', default: "''", desc: 'Chave ativa no modo single-select.' },
+        { name: 'activeKeys', type: 'string[]', default: '[]', desc: 'Chaves ativas no modo multi-select.' },
+        { name: 'multiSelect', type: 'boolean', default: 'false', desc: 'Habilita seleção múltipla.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita toda a barra.' },
+      ],
+      outputs: [
+        { name: 'tabChange', type: 'string', default: '-', desc: 'Emitido ao trocar de aba no modo single.' },
+        { name: 'keysChange', type: 'string[]', default: '-', desc: 'Emitido ao alterar seleção no modo multi.' },
+      ],
+      slots: '<code>[filter-end]</code> para projetar controles adicionais à direita.',
+      a11y: [
+        'Abas possuem <code>role="tab"</code> e <code>aria-selected</code>.',
+        'Navegação por teclado com setas direcionais.',
+      ],
+      practices: [
+        'Use <code>multiSelect</code> para filtros de status com múltiplos valores.',
+        'Exiba contador de itens em <code>FilterTab.count</code> para contexto.',
+      ],
+    },
+
+    'retro-grid-row': {
+      badges: ['standalone', 'layout', 'onpush', 'composable'],
+      description: 'Linha genérica de grid — projeta qualquer filho como célula e herda --grid-cols.',
+      inputs: [],
+      outputs: [],
+      slots: 'Content projection para células da linha. Cada filho direto vira uma célula.',
+      a11y: [
+        'Use <code>role="row"</code> implicitamente via estrutura de grid.',
+      ],
+      practices: [
+        'Use dentro de <code>DataGrid</code> para linhas simples.',
+        'Não adicione padding diretamente nos filhos — use tokens de espaçamento.',
+      ],
+    },
+
+    'retro-expandable-row': {
+      badges: ['standalone', 'layout', 'onpush', 'composable'],
+      description: 'Linha expansível com painel de detalhe animado — herda --grid-cols e usa model(expanded).',
+      inputs: [
+        { name: 'expanded', type: 'boolean', default: 'false', desc: 'Estado expandido.' },
+        { name: 'expandOnClick', type: 'boolean', default: 'true', desc: 'Expande ao clicar em qualquer parte da linha.' },
+      ],
+      outputs: [
+        { name: 'expandedChange', type: 'boolean', default: '-', desc: 'Emite ao alternar o estado.' },
+      ],
+      slots: 'Content projection para células. <code>[detail]</code> para conteúdo expandido.',
+      a11y: [
+        'Botão de toggle possui <code>aria-expanded</code>.',
+        'Foco visível no controle de expansão.',
+      ],
+      practices: [
+        'Use <code>expandOnClick="false"</code> quando houver ações na linha.',
+        'Mantenha o painel de detalhes curto — máximo 3 linhas.',
+      ],
+    },
+
+    'retro-paginator': {
+      badges: ['standalone', 'interactive', 'onpush', 'a11y'],
+      description: 'Barra de paginação com navegação de páginas, janela inteligente de números e seletor de page size.',
+      inputs: [
+        { name: 'page', type: 'number', default: '0', desc: 'Página atual (0-indexed).' },
+        { name: 'pageSize', type: 'number', default: '10', desc: 'Itens por página.' },
+        { name: 'total', type: 'number', default: '0', desc: 'Total de itens.' },
+        { name: 'pageSizeOptions', type: 'number[]', default: '[5, 10, 25, 50]', desc: 'Opções de page size.' },
+        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita navegação.' },
+      ],
+      outputs: [
+        { name: 'pageChange', type: 'number', default: '-', desc: 'Emite ao trocar de página.' },
+        { name: 'pageSizeChange', type: 'number', default: '-', desc: 'Emite ao alterar page size.' },
+      ],
+      a11y: [
+        'Links de página possuem <code>aria-label</code> descritivo.',
+        'Estado ativo indicado por <code>aria-current="page"</code>.',
+      ],
+      practices: [
+        'Sempre sincronize <code>page</code> ao alterar <code>pageSize</code> (reset para 0).',
+        'Use <code>pageSizeOptions</code> compatíveis com o backend.',
+      ],
+    },
+
+    'retro-status-bar': {
+      badges: ['standalone', 'layout', 'onpush'],
+      description: 'Barra de status fixa com versão, itens de sistema e atalhos de teclado.',
+      inputs: [
+        { name: 'version', type: 'string', default: "''", desc: 'Versão do sistema exibida à esquerda.' },
+        { name: 'items', type: 'StatusItem[]', default: '[]', desc: 'Itens de status (label + value).' },
+        { name: 'shortcuts', type: 'StatusShortcut[]', default: '[]', desc: 'Atalhos de teclado exibidos à direita.' },
+      ],
+      outputs: [],
+      a11y: [
+        'Atalhos possuem <code>aria-label</code> com descrição da ação.',
+      ],
+      practices: [
+        'Mantenha a barra visível em todas as páginas da aplicação.',
+        'Atualize <code>items</code> dinamicamente para status de conexão.',
+      ],
+    },
+
+    'retro-data-grid': {
+      badges: ['standalone', 'layout', 'interactive', 'onpush', 'composable'],
+      description: 'Grid de dados com sort, busca, filtros por checkbox, regras avançadas (column+op+value), redimensionamento de colunas e visibilidade dinâmica.',
+      inputs: [
+        { name: 'title', type: 'string', default: "''", desc: 'Título do grid.' },
+        { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo do grid.' },
+        { name: 'columns', type: 'GridColumn[]', default: '[]', desc: 'Definição das colunas.', required: true },
+        { name: 'rowCount', type: 'number', default: '0', desc: 'Número total de linhas (para layout de skeleton).' },
+        { name: 'addLabel', type: 'string', default: "''", desc: 'Label do botão de adicionar.' },
+        { name: 'searchable', type: 'boolean', default: 'false', desc: 'Habilita busca global.' },
+        { name: 'resizable', type: 'boolean', default: 'false', desc: 'Habilita redimensionamento de colunas.' },
+        { name: 'columnPicker', type: 'boolean', default: 'false', desc: 'Habilita picker de visibilidade de colunas.' },
+        { name: 'filterRulesEnabled', type: 'boolean', default: 'false', desc: 'Habilita regras de filtro avançadas.' },
+        { name: 'searchQuery', type: 'string', default: "''", desc: 'Valor da busca global.' },
+        { name: 'sortState', type: 'SortState', default: '{}', desc: 'Estado atual de ordenação.' },
+        { name: 'columnFilters', type: 'ColumnFilterState', default: '{}', desc: 'Filtros por coluna (checkbox).' },
+        { name: 'filterOptionsMap', type: 'FilterOptionsMap', default: '{}', desc: 'Opções disponíveis para filtros por coluna.' },
+        { name: 'filterRules', type: 'FilterRule[]', default: '[]', desc: 'Regras de filtro avançadas.' },
+        { name: 'hiddenCols', type: 'Set<string>', default: 'new Set()', desc: 'Colunas ocultas.' },
+        { name: 'colWidths', type: 'Record<string, string>', default: '{}', desc: 'Larguras customizadas de colunas.' },
+      ],
+      outputs: [
+        { name: 'addClick', type: 'void', default: '-', desc: 'Emitido ao clicar em adicionar.' },
+        { name: 'searchChange', type: 'string', default: '-', desc: 'Emitido ao alterar busca global.' },
+        { name: 'sortChange', type: 'string', default: '-', desc: 'Emitido ao alterar ordenação.' },
+        { name: 'columnFilterChange', type: '{ field: string; values: string[] }', default: '-', desc: 'Emitido ao alterar filtro de coluna.' },
+        { name: 'filterRuleAdd', type: 'void', default: '-', desc: 'Emitido ao adicionar regra de filtro.' },
+        { name: 'filterRuleRemove', type: 'string', default: '-', desc: 'Emitido ao remover regra (por id).' },
+        { name: 'filterRuleUpdate', type: 'FilterRule', default: '-', desc: 'Emitido ao atualizar regra.' },
+        { name: 'filterRuleClear', type: 'void', default: '-', desc: 'Emitido ao limpar todas as regras.' },
+        { name: 'colVisibilityToggle', type: 'string', default: '-', desc: 'Emitido ao alternar visibilidade de coluna.' },
+        { name: 'colVisibilityShowAll', type: 'void', default: '-', desc: 'Emitido ao mostrar todas as colunas.' },
+        { name: 'colWidthChange', type: '{ key: string; width: string }', default: '-', desc: 'Emitido ao redimensionar coluna.' },
+      ],
+      slots: 'Content projection para linhas via <code>GridRow</code> ou <code>ExpandableRow</code>. <code>[grid-empty]</code> para estado vazio.',
+      a11y: [
+        'Cabeçalho de coluna possui <code>role="columnheader"</code> e <code>aria-sort</code>.',
+        'Busca global possui <code>aria-label</code>.',
+      ],
+      practices: [
+        'Use <code>createRetroTable</code> para gerenciar estado de sort/filtro/paginação.',
+        'Defina <code>width</code> em <code>GridColumn</code> como <code>minmax(0, 1fr)</code> para colunas fluidas.',
+      ],
+    },
+
+    terminal: {
+      badges: ['standalone', 'interactive', 'onpush'],
+      description: 'Terminal interativo com histórico, tab completion, typewriter, cursor de bloco e comandos registráveis.',
+      inputs: [
+        { name: 'prompt', type: 'string', default: "'$ '", desc: 'Texto do prompt.' },
+        { name: 'height', type: 'string', default: "'320px'", desc: 'Altura do container.' },
+        { name: 'commands', type: 'TerminalCommand[]', default: '[]', desc: 'Comandos registráveis disponíveis.' },
+        { name: 'typewriterSpeed', type: 'number', default: '16', desc: 'Velocidade do efeito typewriter (ms/char). 0 = instantâneo.' },
+        { name: 'autofocus', type: 'boolean', default: 'true', desc: 'Foca automaticamente ao renderizar.' },
+        { name: 'historySize', type: 'number', default: '100', desc: 'Tamanho do histórico de comandos.' },
+        { name: 'welcome', type: 'string', default: "''", desc: 'Mensagem de boas-vindas exibida ao iniciar.' },
+      ],
+      outputs: [
+        { name: 'commandRun', type: '{ name: string; args: string[] }', default: '-', desc: 'Emitido ao executar um comando.' },
+      ],
+      a11y: [
+        'Input do terminal possui <code>aria-label</code>.',
+        'Saída do terminal usa <code>aria-live="polite"</code> para anúncios.',
+      ],
+      practices: [
+        'Registre comandos via array <code>TerminalCommand[]</code> para reutilização.',
+        'Use <code>typewriterSpeed="0"</code> para respostas instantâneas em testes.',
+      ],
+    },
+
+    segmented: {
+      badges: ['standalone', 'form', 'cva', 'onpush', 'a11y'],
+      description: 'Seletor segmentado compatível com CVA — alterna entre opções de texto em layout row ou col.',
+      inputs: [
+        { name: 'options', type: 'string[]', default: '[]', desc: 'Opções exibidas.', required: true },
+        { name: 'value', type: 'string', default: "''", desc: 'Opção selecionada.' },
+        { name: 'direction', type: "'row' | 'col'", default: "'row'", desc: 'Direção do layout.' },
+      ],
+      outputs: [
+        { name: 'valueChange', type: 'string', default: '-', desc: 'Emite ao selecionar uma opção.' },
+      ],
+      cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
+      a11y: [
+        'Usa <code>role="radiogroup"</code> com <code>aria-checked</code> por opção.',
+        'Navegação por teclado com setas direcionais.',
+      ],
+      practices: [
+        'Use para poucas opções mutuamente exclusivas (3–5).',
+        'Prefira <code>direction="col"</code> em sidebars estreitas.',
+      ],
+    },
+
+    'button-group': {
+      badges: ['standalone', 'layout', 'onpush', 'composable'],
+      description: 'Wrapper semântico que agrupa botões adjacentes removendo bordas internas duplicadas.',
+      inputs: [],
+      outputs: [],
+      slots: 'Content projection para botões agrupados.',
+      a11y: [
+        'Agrupa botões relacionados semanticamente.',
+      ],
+      practices: [
+        'Use para ações adjacentes de mesmo nível hierárquico.',
+        'Misture variantes dentro do grupo para indicar ação principal vs. secundária.',
+      ],
+    },
+
+    'api-table': {
+      badges: ['standalone', 'display', 'onpush', 'composable'],
+      description: 'Tabela de referência de API — renderiza cabeçalhos tipados (input/output/method) e projeta linhas via ng-content.',
+      inputs: [
+        { name: 'type', type: "'input' | 'output' | 'method'", default: "'input'", desc: 'Tipo de API a documentar.', required: true },
+        { name: 'gap', type: 'boolean', default: 'false', desc: 'Adiciona margem superior entre tabelas.' },
+        { name: 'headers', type: 'string[]', default: '[]', desc: 'Cabeçalhos customizados (override automático).' },
+      ],
+      outputs: [],
+      slots: 'Content projection para linhas da tabela via <code>&lt;tr&gt;</code>.',
+      a11y: [
+        'Tabela usa marcação semântica <code>&lt;table&gt;</code>.',
+      ],
+      practices: [
+        'Use <code>type="input"</code> para inputs, <code>type="output"</code> para outputs, <code>type="method"</code> para métodos.',
+        'Adicione <code>gap="true"</code> entre tabelas consecutivas para respiro visual.',
+      ],
+    },
+
+    'retro-tabs': {
+      badges: ['standalone', 'interactive', 'onpush', 'a11y'],
+      description: 'Barra de abas estilo terminal com disabled, icon, badge por aba, navegação por teclado (← → Home End) e cinco variantes visuais.',
+      inputs: [
+        { name: 'tabs', type: 'RetroTab[]', default: '[]', desc: 'Definição das abas.', required: true },
+        { name: 'active', type: 'string', default: "''", desc: 'ID da aba ativa.' },
+        { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
+      ],
+      outputs: [
+        { name: 'activeChange', type: 'string', default: '-', desc: 'Emitido ao trocar de aba.' },
+      ],
+      slots: 'Content projection para o painel de conteúdo da aba ativa.',
+      a11y: [
+        'Abas possuem <code>role="tab"</code>, <code>aria-selected</code> e <code>aria-disabled</code>.',
+        'Navegação por teclado: ← → move entre abas, Home/End para início/fim.',
+      ],
+      practices: [
+        'Use <code>variant="terminal"</code> para painéis de configuração ou logs.',
+        'Forneça <code>icon</code> e <code>badge</code> para scan rápido do estado das abas.',
+      ],
+    },
+
+    'retro-section': {
+      badges: ['standalone', 'layout', 'onpush', 'composable'],
+      description: 'Contêiner estilo fieldset com label na borda — versão leve do window frame para agrupar conteúdo internamente.',
+      inputs: [
+        { name: 'label', type: 'string', default: "''", desc: 'Texto exibido na borda superior.', required: true },
+        { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
+      ],
+      outputs: [],
+      slots: 'Content projection para o conteúdo interno.',
+      a11y: [
+        'Label associado semanticamente ao contêiner.',
+      ],
+      practices: [
+        'Use para agrupar campos de formulário relacionados.',
+        'Prefira Section quando não precisar de controles de janela ou footer.',
+      ],
+    },
+  };
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -1401,8 +2721,6 @@ export class MyFeaturePage {}`;
   protected setActiveDocTab(tab: DocTab): void {
     this.activeDocTab.set(tab);
   }
-
-  protected setTheme(theme: ThemeName): void  { this.themeService.setTheme(theme); }
 
   protected setPreviewBackground(background: PreviewBackground): void {
     this.previewBackground.set(background);
@@ -1780,7 +3098,8 @@ export class MyFeaturePage {}`;
         };
       case 'retro-section':
         return { variant: this.sectionVariant() };
-
+      default:
+        return {};
     }
   }
 
@@ -2007,7 +3326,7 @@ export class MyFeaturePage {}`;
       case 'retro-section':
         if (state.variant === 'default' || state.variant === 'terminal' || state.variant === 'system' || state.variant === 'alert' || state.variant === 'ghost') this.sectionVariant.set(state.variant);
         break;
-
     }
   }
+
 }

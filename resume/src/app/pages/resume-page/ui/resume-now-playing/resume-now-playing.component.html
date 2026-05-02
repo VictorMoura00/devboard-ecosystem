@@ -20,17 +20,17 @@
   </div>
 
   <div class="np-controls">
-    <app-retro-button
+    <retro-button
       variant="ghost"
       size="sm"
       [ariaLabel]="playing() ? 'pausar' : 'tocar'"
       (pressed)="toggle.emit()"
-    >{{ playing() ? '⏸' : '▶' }}</app-retro-button>
+    >{{ playing() ? '⏸' : '▶' }}</retro-button>
 
     <div class="np-vol">
       <span class="np-vol-icon" aria-hidden="true">{{ volume() === 0 ? '✕' : '♪' }}</span>
       <div class="np-vol-slider">
-        <app-retro-range
+        <retro-range
           [value]="volume()"
           [min]="0"
           [max]="1"

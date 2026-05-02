@@ -4,7 +4,7 @@ import { NotifSource, NotifType } from './notif.model';
 import { RelativeTimePipe } from './relative-time.pipe';
 
 @Component({
-  selector: 'app-retro-notif-item',
+  selector: 'retro-notif-item',
   standalone: true,
   imports: [RelativeTimePipe],
   templateUrl: './retro-notif-item.component.html',

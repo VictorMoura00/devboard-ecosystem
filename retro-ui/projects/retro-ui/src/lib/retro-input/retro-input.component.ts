@@ -16,7 +16,7 @@ export type RetroInputType = 'text' | 'search' | 'number' | 'email' | 'password'
 export type RetroInputSize = 'sm' | 'md' | 'lg';
 
 @Component({
-  selector: 'app-retro-input',
+  selector: 'retro-input',
   standalone: true,
   templateUrl: './retro-input.component.html',
   styleUrl: './retro-input.component.scss',

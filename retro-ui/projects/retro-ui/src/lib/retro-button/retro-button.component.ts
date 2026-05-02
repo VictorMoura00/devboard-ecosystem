@@ -8,7 +8,7 @@ export type RetroButtonIconPos = 'left' | 'right';
 type ButtonType = 'button' | 'submit' | 'reset';
 
 @Component({
-  selector: 'app-retro-button',
+  selector: 'retro-button',
   standalone: true,
   imports: [NgTemplateOutlet],
   templateUrl: './retro-button.component.html',

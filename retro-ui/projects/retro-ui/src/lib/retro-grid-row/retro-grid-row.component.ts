@@ -4,7 +4,7 @@ import { GridRowSize } from '../retro-data-grid/grid.model';
 export type { GridRowSize };
 
 @Component({
-  selector: 'app-retro-grid-row',
+  selector: 'retro-grid-row',
   standalone: true,
   template: `<ng-content />`,
   styleUrl: './retro-grid-row.component.scss',

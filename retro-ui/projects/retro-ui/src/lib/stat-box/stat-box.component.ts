@@ -4,7 +4,7 @@ export type StatBoxTone = 'default' | 'success' | 'warning' | 'danger';
 export type StatBoxTrend = 'up' | 'down' | 'neutral';
 
 @Component({
-  selector: 'app-stat-box',
+  selector: 'retro-stat-box',
   standalone: true,
   templateUrl: './stat-box.component.html',
   styleUrl: './stat-box.component.scss',

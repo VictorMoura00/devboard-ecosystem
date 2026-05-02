@@ -8,7 +8,7 @@ export interface FilterTab {
 }
 
 @Component({
-  selector: 'app-retro-filter-bar',
+  selector: 'retro-filter-bar',
   standalone: true,
   templateUrl: './retro-filter-bar.component.html',
   styleUrl: './retro-filter-bar.component.scss',

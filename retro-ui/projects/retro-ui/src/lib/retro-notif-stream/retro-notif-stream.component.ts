@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { NotifService } from './notif.service';
 
 @Component({
-  selector: 'app-retro-notif-stream',
+  selector: 'retro-notif-stream',
   standalone: true,
   templateUrl: './retro-notif-stream.component.html',
   styleUrl: './retro-notif-stream.component.scss',

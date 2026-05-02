@@ -2,9 +2,12 @@
   <button
     type="button"
     class="seg-btn"
+    #segBtn
     [class.seg-btn--active]="_value() === opt"
     [disabled]="_cvaDisabled()"
-    [attr.aria-pressed]="_value() === opt"
+    role="radio"
+    [attr.aria-checked]="_value() === opt"
+    [attr.tabindex]="_value() === opt ? 0 : -1"
     (click)="select(opt)"
   >{{ opt }}</button>
 }

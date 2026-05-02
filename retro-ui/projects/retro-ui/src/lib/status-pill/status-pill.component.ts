@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 export type StatusPillSize = 'sm' | 'md';
 
 @Component({
-  selector: 'app-status-pill',
+  selector: 'retro-status-pill',
   standalone: true,
   templateUrl: './status-pill.component.html',
   styleUrl: './status-pill.component.scss',

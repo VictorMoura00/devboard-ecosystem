@@ -11,7 +11,7 @@ import {
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 @Component({
-  selector: 'app-retro-modal',
+  selector: 'retro-modal',
   standalone: true,
   templateUrl: './retro-modal.component.html',
   styleUrl: './retro-modal.component.scss',

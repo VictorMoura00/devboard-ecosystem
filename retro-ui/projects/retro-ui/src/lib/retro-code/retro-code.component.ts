@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, signal }
 import { HighlightCodePipe } from './highlight-code.pipe';
 
 @Component({
-  selector: 'app-retro-code',
+  selector: 'retro-code',
   standalone: true,
   imports: [HighlightCodePipe],
   templateUrl: './retro-code.component.html',

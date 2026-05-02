@@ -12,7 +12,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export type RetroCheckboxSize = 'sm' | 'md';
 
 @Component({
-  selector: 'app-retro-checkbox',
+  selector: 'retro-checkbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-checkbox.component.html',

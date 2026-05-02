@@ -28,7 +28,7 @@
       class="grid__tb-btn"
       [class.grid__tb-btn--active]="showRulesPanel() || activeRulesCount() > 0"
       (click)="toggleRulesPanel($event)"
-      title="Regras de filtro"
+      title="Filter rules"
     >
       FILTER@if (activeRulesCount() > 0) {<em class="grid__tb-badge">{{ activeRulesCount() }}</em>}
     </button>
@@ -42,7 +42,7 @@
         class="grid__tb-btn"
         [class.grid__tb-btn--active]="showColPicker() || hiddenCols().size > 0"
         (click)="toggleColPicker($event)"
-        title="Colunas visíveis"
+        title="Visible columns"
       >
         COLS@if (hiddenCols().size > 0) {<em class="grid__tb-badge">{{ hiddenCols().size }}</em>}
       </button>
@@ -50,8 +50,8 @@
       @if (showColPicker()) {
         <div class="grid__col-picker" (click)="$event.stopPropagation()">
           <div class="grid__col-picker-hdr">
-            <span>COLUNAS</span>
-            <button type="button" (click)="colVisibilityShowAll.emit()">MOSTRAR TODAS</button>
+            <span>COLUMNS</span>
+            <button type="button" (click)="colVisibilityShowAll.emit()">SHOW ALL</button>
           </div>
           @for (col of columns(); track col.key) {
             @if (col.label) {
@@ -111,26 +111,26 @@
             class="grid__rule-val"
             type="text"
             [value]="rule.value"
-            placeholder="valor…"
+            placeholder="value…"
             (input)="filterRuleUpdate.emit({ id: rule.id, value: $any($event.target).value })"
           />
         }
 
-        <button type="button" class="grid__rule-rm" (click)="filterRuleRemove.emit(rule.id)" title="Remover regra">×</button>
+        <button type="button" class="grid__rule-rm" (click)="filterRuleRemove.emit(rule.id)" title="Remove rule">×</button>
       </div>
     }
 
     <div class="grid__rules-footer">
       <button type="button" class="grid__rules-add" (click)="filterRuleAdd.emit()">
-        + REGRA
+        + RULE
       </button>
       @if (filterRules().length > 0) {
         <button type="button" class="grid__rules-clear" (click)="filterRuleClear.emit()">
-          LIMPAR TUDO
+          CLEAR ALL
         </button>
       }
       @if (filterRules().length === 0) {
-        <span class="grid__rules-hint">Nenhuma regra activa — clique + REGRA para adicionar.</span>
+        <span class="grid__rules-hint">No active rules — click + RULE to add one.</span>
       }
     </div>
   </div>
@@ -174,7 +174,7 @@
             [class.grid__filter-btn--active]="isFiltered(col.key)"
             [attr.aria-expanded]="activeFilterCol() === col.key"
             (click)="toggleFilterCol(col.key, $event)"
-            title="Filtrar {{ col.label }}"
+            title="Filter {{ col.label }}"
           >{{ isFiltered(col.key) ? '◉' : '◎' }}</button>
 
           @if (activeFilterCol() === col.key) {
@@ -190,11 +190,11 @@
                 </label>
               }
               @if (filterOptionsFor(col).length === 0) {
-                <span class="grid__filter-empty">sem opções</span>
+                <span class="grid__filter-empty">no options</span>
               }
               @if (isFiltered(col.key)) {
                 <div class="grid__filter-actions">
-                  <button type="button" (click)="clearFilter(col.key)">LIMPAR</button>
+                  <button type="button" (click)="clearFilter(col.key)">CLEAR</button>
                 </div>
               }
             </div>

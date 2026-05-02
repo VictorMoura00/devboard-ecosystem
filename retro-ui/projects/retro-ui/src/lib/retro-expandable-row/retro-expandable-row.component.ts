@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 
 @Component({
-  selector: 'app-retro-expandable-row',
+  selector: 'retro-expandable-row',
   standalone: true,
   templateUrl: './retro-expandable-row.component.html',
   styleUrl: './retro-expandable-row.component.scss',

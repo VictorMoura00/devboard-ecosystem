@@ -11,7 +11,7 @@ const SYMBOLS: Record<Priority, string> = {
 };
 
 @Component({
-  selector: 'app-priority-indicator',
+  selector: 'retro-priority-indicator',
   standalone: true,
   template: `<span class="pi pi--{{ priority() }}">{{ symbol() }}</span>`,
   styleUrl: './priority-indicator.component.scss',

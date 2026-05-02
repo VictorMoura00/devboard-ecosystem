@@ -1,6 +1,6 @@
 @if (open()) {
   <div class="retro-modal-backdrop" (click)="onBackdropClick()">
-    <section #modalWindow class="retro-modal-window" [attr.data-size]="size()" tabindex="-1" (click)="onWindowClick($event)">
+    <section #modalWindow class="retro-modal-window" [attr.data-size]="size()" tabindex="-1" role="dialog" aria-modal="true" (click)="onWindowClick($event)">
       <header class="retro-modal-titlebar">
         <span class="retro-modal-mark"></span>
         <span>{{ title() }}</span>

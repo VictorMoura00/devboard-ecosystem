@@ -19,7 +19,7 @@ import type { TerminalCommand, TerminalLine, TerminalLineType, TerminalOutputLin
 let _seq = 0;
 
 @Component({
-  selector: 'app-retro-terminal',
+  selector: 'retro-terminal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RetroWindowComponent],
@@ -30,8 +30,8 @@ export class RetroTerminalComponent implements OnInit, AfterViewInit {
   private readonly _cdr = inject(ChangeDetectorRef);
 
   // ── Inputs ────────────────────────────────────────────────────────────────
-  readonly prompt          = input('user@devboard:~$ ');
-  readonly greeting        = input<string[]>(['DevBoard Terminal  v0.1.0', "Type 'help' for available commands."]);
+  readonly prompt          = input('user@retro:~$ ');
+  readonly greeting        = input<string[]>(['Retro Terminal  v0.1.0', "Type 'help' for available commands."]);
   readonly commands        = input<TerminalCommand[]>([]);
   readonly maxLines        = input(500);
   readonly typewriterSpeed = input(16);

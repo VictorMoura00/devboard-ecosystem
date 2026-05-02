@@ -57,6 +57,11 @@
   pointer-events: none;
 }
 
+.checkbox__native:focus-visible + .checkbox__box {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
 .checkbox__box {
   display: inline-flex;
   align-items: center;

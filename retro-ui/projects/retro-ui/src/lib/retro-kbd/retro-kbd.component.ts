@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
-  selector: 'app-retro-kbd',
+  selector: 'retro-kbd',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-kbd.component.html',

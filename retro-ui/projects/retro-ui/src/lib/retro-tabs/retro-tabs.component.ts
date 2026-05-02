@@ -19,7 +19,7 @@ export interface RetroTab {
 export type { WindowVariant as TabVariant };
 
 @Component({
-  selector: 'app-retro-tabs',
+  selector: 'retro-tabs',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-tabs.component.html',

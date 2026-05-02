@@ -5,7 +5,7 @@
       <span class="cv-brand-diamond">♦</span>
       <span class="cv-brand-name">VICTOR.MOURA</span>
       <span class="cv-brand-sep">·</span>
-      <span class="cv-brand-meta">Desenvolvedor Full Stack · <app-status-dot status="active" size="xs" [pulse]="true" /> aberto a oportunidades</span>
+      <span class="cv-brand-meta">Desenvolvedor Full Stack · <retro-status-dot status="active" size="xs" [pulse]="true" /> aberto a oportunidades</span>
     </div>
     <div class="cv-nav-actions">
       <div class="cv-theme-dots">
@@ -20,20 +20,20 @@
           ></button>
         }
       </div>
-      <app-retro-button
+      <retro-button
         variant="ghost"
         size="sm"
         [tone]="audioPlaying() ? 'success' : 'default'"
         [ariaLabel]="audioPlaying() ? 'pausar música' : 'tocar música'"
         (pressed)="togglePlay()"
-      >{{ audioPlaying() ? '♪ ON' : '♪ OFF' }}</app-retro-button>
-      <app-retro-button
+      >{{ audioPlaying() ? '♪ ON' : '♪ OFF' }}</retro-button>
+      <retro-button
         variant="secondary"
         size="sm"
         href="/assets/cv-victor-moura.pdf"
         download="cv-victor-moura.pdf"
         icon="↓"
-      >PDF</app-retro-button>
+      >PDF</retro-button>
     </div>
   </div>
 
@@ -68,9 +68,9 @@
       </p>
       <div class="cv-hero-meta">
         <span class="cv-meta-role">Desenvolvedor Full Stack</span>
-        <app-status-dot status="active" />
+        <retro-status-dot status="active" />
         <span class="cv-meta-loc">Camaçari · Bahia · <img src="/brasil.png" class="cv-flag" alt="BR" /></span>
-        <app-status-dot status="active" [pulse]="true" />
+        <retro-status-dot status="active" [pulse]="true" />
         <span class="cv-meta-open">aberto a oportunidades</span>
         <span class="cv-meta-divider">|</span>
         @for (item of statusItems(); track item.label) {
@@ -124,7 +124,7 @@
         </div>
 
         <div class="cv-whoami-sidebar">
-          <app-retro-window title="id.card" padding="none" status="active" statusLabel="aberto a oportunidades">
+          <retro-window title="id.card" padding="none" status="active" statusLabel="aberto a oportunidades">
             <div class="cv-idcard-body">
               <div class="cv-idcard-avatar">VM</div>
               <div class="cv-idcard-fields">
@@ -150,7 +150,7 @@
                 </div>
               </div>
             </div>
-          </app-retro-window>
+          </retro-window>
         </div>
       </div>
     </div>
@@ -159,7 +159,7 @@
     <div class="cv-github-grid">
 
       <!-- Left: connect links + download -->
-      <app-retro-window title="connect" padding="none">
+      <retro-window title="connect" padding="none">
         <div class="cv-ghcard-links">
           <a class="cv-connect-item" href="https://github.com/VictorMoura00" target="_blank" rel="noopener">
             <span class="cv-connect-icon">♦</span>
@@ -178,19 +178,19 @@
           </a>
         </div>
         <div window-footer class="cv-ghcard-download">
-          <app-retro-button
+          <retro-button
             variant="ghost"
             size="sm"
             icon="↓"
             [fullWidth]="true"
             href="/assets/cv-victor-moura.pdf"
             download="cv-victor-moura.pdf"
-          >DOWNLOAD CV.PDF</app-retro-button>
+          >DOWNLOAD CV.PDF</retro-button>
         </div>
-      </app-retro-window>
+      </retro-window>
 
       <!-- Right: GitHub public stats + contribution heatmap -->
-      <app-retro-window
+      <retro-window
         title="github.com/victormoura00"
         padding="none"
         [loading]="githubLoading()"
@@ -239,28 +239,28 @@
             <span class="cv-contrib-total">{{ contribTotal() | number:'1.0-0':'pt-BR' }} contribuições no último ano</span>
           </div>
         }
-      </app-retro-window>
+      </retro-window>
     </div>
 
     <!-- Tech Stack -->
-    <app-retro-window title="tech stack" subtitle="stacks/" padding="none">
+    <retro-window title="tech stack" subtitle="stacks/" padding="none">
       <div class="cv-stack-grid">
         @for (group of techGroups; track group.label) {
           <div class="cv-stack-card">
             <div class="cv-stack-card-header">{{ group.label }}</div>
             <div class="cv-stack-tags">
               @for (tag of group.tags; track tag) {
-                <app-retro-tag [label]="tag" />
+                <retro-tag [label]="tag" />
               }
             </div>
           </div>
         }
       </div>
-    </app-retro-window>
+    </retro-window>
 
     <!-- Terminal -->
     <div class="cv-terminal-wrap">
-      <app-retro-terminal
+      <retro-terminal
         windowTitle="victormoura@devboard:~"
         prompt="victormoura@devboard:~$ "
         [greeting]="terminalGreeting"
@@ -284,7 +284,7 @@
 
       <div class="cv-exp-list">
         @for (job of experience; track job.path) {
-          <app-retro-window [title]="job.path" padding="none">
+          <retro-window [title]="job.path" padding="none">
             <span window-actions class="cv-exp-period">{{ job.period }}</span>
             <div class="cv-exp-body">
               <div class="cv-exp-sidebar">
@@ -301,12 +301,12 @@
                 </ul>
                 <div class="cv-exp-stack">
                   @for (tag of job.stack; track tag) {
-                    <app-retro-tag [label]="tag" />
+                    <retro-tag [label]="tag" />
                   }
                 </div>
               </div>
             </div>
-          </app-retro-window>
+          </retro-window>
         }
       </div>
 
@@ -322,10 +322,10 @@
           <span class="cv-edu-status">em curso</span>
         </div>
         <div class="cv-edu-meta">Anhaguera · 2025 → 2027</div>
-        <app-status-pill status="cursando" />
+        <retro-status-pill status="cursando" />
       </div>
 
-      <app-retro-data-grid
+      <retro-data-grid
         title="COURSES.LOG"
         subtitle="certificados"
         [columns]="courseColumns"
@@ -354,15 +354,15 @@
         (colWidthChange)="courseTable.setColWidth($event.key, $event.width)"
       >
         @for (course of courseTable.filteredRows(); track course.name; let i = $index) {
-          <app-retro-grid-row>
+          <retro-grid-row>
             <span class="cv-courses-id">{{ i + 1 }}</span>
             <span>{{ course.name }}</span>
             <span style="text-align:center">{{ course.instructor }}</span>
             <span style="text-align:center">{{ course.platform }}</span>
-            <app-status-pill status="completed" style="justify-self:center" />
-          </app-retro-grid-row>
+            <retro-status-pill status="completed" style="justify-self:center" />
+          </retro-grid-row>
         }
-      </app-retro-data-grid>
+      </retro-data-grid>
 
     </div>
   }
@@ -377,7 +377,7 @@
 
       <div class="cv-projects-grid">
         @for (proj of projects; track proj.name) {
-          <app-retro-window
+          <retro-window
             [title]="proj.name"
             [subtitle]="proj.status"
             padding="md"
@@ -386,18 +386,18 @@
 
             <div class="cv-proj-stack">
               @for (tag of proj.stack; track tag) {
-                <app-retro-tag [label]="tag" />
+                <retro-tag [label]="tag" />
               }
             </div>
 
             @if (proj.link) {
               <div class="cv-proj-link">
-                <app-retro-button variant="ghost" size="sm" [href]="'https://' + proj.link">
+                <retro-button variant="ghost" size="sm" [href]="'https://' + proj.link">
                   ↗ {{ proj.link }}
-                </app-retro-button>
+                </retro-button>
               </div>
             }
-          </app-retro-window>
+          </retro-window>
         }
       </div>
     </div>
@@ -407,7 +407,7 @@
 </main>
 
 <!-- ── Status Bar ─────────────────────────────────────────────────────────── -->
-<app-retro-status-bar
+<retro-status-bar
   version="v1.0.0"
   [items]="statusItems()"
   [shortcuts]="[{ key: 'O', label: 'open section' }, { key: '?', label: 'help' }]"

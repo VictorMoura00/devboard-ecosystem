@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 export type StatusDotSize = 'xs' | 'sm' | 'md';
 
 @Component({
-  selector: 'app-status-dot',
+  selector: 'retro-status-dot',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<span [class]="classes()" [attr.aria-label]="ariaLabel() || null" [attr.role]="ariaLabel() ? 'img' : null"></span>`,

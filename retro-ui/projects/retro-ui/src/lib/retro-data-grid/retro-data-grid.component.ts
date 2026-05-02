@@ -13,7 +13,7 @@ import {
 import { FilterOp, FilterRule, GridColumn, GridRowSize, SortState } from './grid.model';
 
 @Component({
-  selector: 'app-retro-data-grid',
+  selector: 'retro-data-grid',
   standalone: true,
   templateUrl: './retro-data-grid.component.html',
   styleUrl: './retro-data-grid.component.scss',
@@ -27,7 +27,7 @@ export class RetroDataGridComponent {
   readonly subtitle     = input('');
   readonly columns      = input<GridColumn[]>([]);
   readonly rowCount     = input<number | null>(null);
-  readonly emptyMessage = input('sem registros');
+  readonly emptyMessage = input('no records');
   readonly addLabel     = input<string | null>(null);
   readonly rowSize      = input<GridRowSize>('md');
   readonly addClick     = output<void>();

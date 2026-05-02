@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 @Component({
-  selector: 'app-retro-paginator',
+  selector: 'retro-paginator',
   standalone: true,
   templateUrl: './retro-paginator.component.html',
   styleUrl: './retro-paginator.component.scss',

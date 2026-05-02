@@ -4,7 +4,7 @@ import { ToastMessage, ToastPosition, ToastType } from './toast.model';
 import { ToastService } from './toast.service';
 
 @Component({
-  selector: 'app-retro-toast',
+  selector: 'retro-toast',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './retro-toast.component.html',

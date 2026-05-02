@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'app-api-table',
+  selector: 'retro-api-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -35,9 +35,9 @@ export class ApiTableComponent {
   protected readonly resolvedHeaders = computed<string[]>(() => {
     if (this.headers().length) return this.headers();
     switch (this.type()) {
-      case 'input':  return ['input', 'tipo', 'padrão', 'descrição'];
-      case 'output': return ['output', 'tipo', 'descrição'];
-      case 'method': return ['método público', 'assinatura', 'descrição'];
+      case 'input':  return ['input', 'type', 'default', 'description'];
+      case 'output': return ['output', 'type', 'description'];
+      case 'method': return ['public method', 'signature', 'description'];
     }
   });
 }
