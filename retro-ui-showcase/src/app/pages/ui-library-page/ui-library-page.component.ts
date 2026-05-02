@@ -941,7 +941,6 @@ Every interactive component implements:
   // ── Terminal ──────────────────────────────────────────────────────────────
 
   protected readonly termPrompt          = signal('user@devboard:~$ ');
-  protected readonly termHeight          = signal('420px');
   protected readonly termTypewriterSpeed = signal(16);
 
   protected readonly segOptions  = signal<string[]>(['alpha', 'beta', 'gamma']);
@@ -1837,18 +1836,22 @@ export class MyFeaturePage {}`;
         { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
         { name: 'padding', type: 'WindowPadding', default: "'md'", desc: 'Espaçamento interno: none, sm, md, lg.' },
         { name: 'status', type: 'WindowStatus | null', default: 'null', desc: 'Status exibido no canto: idle, active, loading, error.' },
+        { name: 'statusLabel', type: 'string', default: "''", desc: 'Label acessível para o status.' },
         { name: 'controls', type: 'WindowControl[]', default: '[]', desc: 'Botões de controle: minimize, maximize, close.' },
         { name: 'scrollable', type: 'boolean', default: 'false', desc: 'Habilita scroll interno quando o conteúdo excede a altura.' },
+        { name: 'maxHeight', type: 'number', default: '340', desc: 'Altura máxima quando scrollable está ativo.' },
         { name: 'loading', type: 'boolean', default: 'false', desc: 'Substitui o conteúdo por um skeleton de carregamento.' },
         { name: 'showControls', type: 'boolean', default: 'false', desc: 'Atalho para exibir os três controles padrão.' },
+        { name: 'closed', type: 'boolean', default: 'false', desc: 'Controla estado fechado da janela (two-way via model).' },
+        { name: 'icon', type: 'string', default: "''", desc: 'Ícone exibido antes do título.' },
       ],
       outputs: [
-        { name: 'minimize', type: 'void', default: '-', desc: 'Emitido ao clicar no botão minimizar.' },
-        { name: 'maximize', type: 'void', default: '-', desc: 'Emitido ao clicar no botão maximizar.' },
-        { name: 'close', type: 'void', default: '-', desc: 'Emitido ao clicar no botão fechar.' },
-        { name: 'controlClick', type: 'WindowControl', default: '-', desc: 'Emitido ao clicar em qualquer controle, com o nome do controle.' },
+        { name: 'minimizeClick', type: 'void', default: '-', desc: 'Emitido ao clicar no botão minimizar.' },
+        { name: 'maximizeClick', type: 'void', default: '-', desc: 'Emitido ao clicar no botão maximizar.' },
+        { name: 'closeClick', type: 'void', default: '-', desc: 'Emitido ao clicar no botão fechar.' },
+        { name: 'closedChange', type: 'boolean', default: '-', desc: 'Emitido ao alterar o estado closed (two-way via model).' },
       ],
-      slots: '<code>[window-footer]</code> para conteúdo de rodapé fixo.',
+      slots: '<code>[window-actions]</code> para ações no cabeçalho. <code>[window-footer]</code> para rodapé fixo.',
       a11y: [
         'Controles de janela possuem <code>aria-label</code> descritivo.',
         'Foco visível nos botões de controle via <code>--focus-ring</code>.',
@@ -1871,12 +1874,16 @@ export class MyFeaturePage {}`;
         { name: 'iconPos', type: "'left' | 'right'", default: "'left'", desc: 'Posição do ícone relativo ao texto.' },
         { name: 'badge', type: 'string', default: "''", desc: 'Texto curto exibido ao lado do label.' },
         { name: 'href', type: 'string', default: "''", desc: 'URL para renderizar como âncora (<a>) ao invés de <button>.' },
+        { name: 'type', type: "'button' | 'submit' | 'reset'", default: "'button'", desc: 'Tipo do botão nativo.' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação e aplica estilo visual.' },
         { name: 'loading', type: 'boolean', default: 'false', desc: 'Substitui o conteúdo por um spinner.' },
         { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'pressed', type: 'MouseEvent', default: '-', desc: 'Emitido ao clicar no botão (não emitido se disabled ou loading).' },
+        { name: 'focused', type: 'FocusEvent', default: '-', desc: 'Emitido ao receber foco.' },
+        { name: 'blurred', type: 'FocusEvent', default: '-', desc: 'Emitido ao perder foco.' },
       ],
       cva: ['Não implementa CVA — usa output para eventos.'],
       a11y: [
@@ -1908,10 +1915,11 @@ export class MyFeaturePage {}`;
         { name: 'errorMessage', type: 'string', default: "''", desc: 'Mensagem de erro exibida abaixo do campo.' },
         { name: 'helpText', type: 'string', default: "''", desc: 'Texto auxiliar exibido abaixo do campo.' },
         { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'valueChange', type: 'string', default: '-', desc: 'Emite o novo valor a cada mudança.' },
-        { name: 'blur', type: 'FocusEvent', default: '-', desc: 'Emite ao perder o foco.' },
+        { name: 'cleared', type: 'void', default: '-', desc: 'Emitido ao limpar o campo via botão clear.' },
       ],
       cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
       a11y: [
@@ -1932,9 +1940,11 @@ export class MyFeaturePage {}`;
       inputs: [
         { name: 'options', type: '{ label: string; value: string; separator?: boolean }[]', default: '[]', desc: 'Lista de opções exibidas.', required: true },
         { name: 'value', type: 'string', default: "''", desc: 'Valor selecionado.' },
+        { name: 'placeholder', type: 'string', default: "''", desc: 'Placeholder exibido quando nenhum valor está selecionado.' },
         { name: 'size', type: "'sm' | 'md'", default: "'md'", desc: 'Tamanho do select.' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
         { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'valueChange', type: 'string', default: '-', desc: 'Emite o novo valor selecionado.' },
@@ -1960,6 +1970,9 @@ export class MyFeaturePage {}`;
         { name: 'step', type: 'number', default: '1', desc: 'Incremento entre valores.' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
         { name: 'fullWidth', type: 'boolean', default: 'false', desc: 'Ocupa 100% da largura do container.' },
+        { name: 'showValue', type: 'boolean', default: 'false', desc: 'Exibe o valor numérico ao lado do slider.' },
+        { name: 'label', type: 'string', default: "''", desc: 'Label descritivo acima do slider.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'valueChange', type: 'number', default: '-', desc: 'Emite o novo valor ao soltar o slider ou usar teclas.' },
@@ -1986,10 +1999,13 @@ export class MyFeaturePage {}`;
         { name: 'invalid', type: 'boolean', default: 'false', desc: 'Aplica estilo visual de erro.' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita interação.' },
         { name: 'indeterminate', type: 'boolean', default: 'false', desc: 'Estado indeterminado (ex: seleção parcial em lista).' },
+        { name: 'trueValue', type: 'unknown', default: 'true', desc: 'Valor emitido via CVA quando checked=true.' },
+        { name: 'falseValue', type: 'unknown', default: 'false', desc: 'Valor emitido via CVA quando checked=false.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'checkedChange', type: 'boolean', default: '-', desc: 'Emite o novo estado ao interagir.' },
-        { name: 'blur', type: 'FocusEvent', default: '-', desc: 'Emite ao perder o foco.' },
+        { name: 'valueChange', type: 'unknown', default: '-', desc: 'Emite o valor trueValue/falseValue ao alterar o estado (CVA).' },
       ],
       cva: ['Suporta <code>ngModel</code> e <code>formControl</code> via ControlValueAccessor.'],
       a11y: [
@@ -2042,7 +2058,7 @@ export class MyFeaturePage {}`;
       badges: ['standalone', 'display', 'onpush'],
       description: 'Indicador pontual de estado com opção de pulso para atividade.',
       inputs: [
-        { name: 'status', type: 'string', default: "'default'", desc: 'Status que determina a cor.' },
+        { name: 'status', type: 'string', default: '-', desc: 'Status que determina a cor.', required: true },
         { name: 'size', type: 'StatusDotSize', default: "'sm'", desc: 'Tamanho: xs, sm, md.' },
         { name: 'pulse', type: 'boolean', default: 'false', desc: 'Animação de pulso contínuo.' },
         { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível.' },
@@ -2153,7 +2169,7 @@ export class MyFeaturePage {}`;
         { name: 'maxVisible', type: 'number', default: '5', desc: 'Número máximo de toasts visíveis simultaneamente.' },
       ],
       outputs: [
-        { name: 'toastClosed', type: 'string', default: '-', desc: 'Emitido quando um toast é fechado.' },
+        { name: 'toastClosed', type: 'ToastMessage', default: '-', desc: 'Emitido quando um toast é fechado.' },
       ],
       a11y: [
         'Toasts anunciam novas mensagens via <code>aria-live="polite"</code>.',
@@ -2178,7 +2194,10 @@ export class MyFeaturePage {}`;
       outputs: [
         { name: 'msgClosed', type: 'void', default: '-', desc: 'Emitido ao clicar no botão de fechar.' },
       ],
-      slots: 'Content projection para conteúdo rico além do texto simples.',
+      methods: [
+        { name: 'close', type: '() => void', default: '-', desc: 'Fecha a mensagem programaticamente.' },
+      ],
+      slots: 'Content projection para conteúdo rico quando <code>text</code> não é fornecido.',
       a11y: [
         '<code>role="alert"</code> para severidades <code>error</code> e <code>warning</code>.',
         'Botão de fechar com <code>aria-label</code>.',
@@ -2198,7 +2217,7 @@ export class MyFeaturePage {}`;
         { name: 'shape', type: 'SkeletonShape', default: "'rectangle'", desc: 'Formato: rectangle, circle.' },
         { name: 'animation', type: 'SkeletonAnimation', default: "'wave'", desc: 'Animação: wave, pulse, none.' },
         { name: 'count', type: 'number', default: '1', desc: 'Número de repetições.' },
-        { name: 'ariaLabel', type: 'string', default: "'loading'", desc: 'Label acessível.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível.' },
       ],
       outputs: [],
       a11y: [
@@ -2220,12 +2239,13 @@ export class MyFeaturePage {}`;
         { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo do modal.' },
         { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", desc: 'Tamanho do modal.' },
         { name: 'closeOnBackdrop', type: 'boolean', default: 'true', desc: 'Fecha ao clicar no backdrop.' },
+        { name: 'closeOnEscape', type: 'boolean', default: 'true', desc: 'Fecha ao pressionar Escape.' },
         { name: 'showCloseButton', type: 'boolean', default: 'true', desc: 'Exibe botão de fechar no header.' },
       ],
       outputs: [
         { name: 'closed', type: 'void', default: '-', desc: 'Emitido ao fechar o modal.' },
       ],
-      slots: '<code>[modal-body]</code> para conteúdo principal. <code>[modal-actions]</code> para botões de ação.',
+      slots: 'Content projection padrão para conteúdo principal. <code>[modal-actions]</code> para botões de ação.',
       a11y: [
         'Foco preso dentro do modal enquanto aberto.',
         '<code>Escape</code> fecha o modal.',
@@ -2242,13 +2262,13 @@ export class MyFeaturePage {}`;
       description: 'Bloco expansível para seções de documentação e conteúdo progressivo.',
       inputs: [
         { name: 'title', type: 'string', default: "''", desc: 'Título exibido no cabeçalho.', required: true },
-        { name: 'collapsed', type: 'boolean', default: 'false', desc: 'Estado recolhido.' },
+        { name: 'collapsed', type: 'boolean', default: 'false', desc: 'Estado recolhido (two-way via model).' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita expansão.' },
       ],
       outputs: [
-        { name: 'collapsedChange', type: 'boolean', default: '-', desc: 'Emite ao alternar o estado.' },
+        { name: 'collapsedChange', type: 'boolean', default: '-', desc: 'Emite ao alternar o estado (two-way via model).' },
       ],
-      slots: 'Content projection para o corpo expansível.',
+      slots: 'Content projection para o corpo expansível. <code>[collapsible-actions]</code> para ações no cabeçalho.',
       a11y: [
         'Botão de toggle possui <code>aria-expanded</code>.',
         'Foco visível no cabeçalho interativo.',
@@ -2301,11 +2321,11 @@ export class MyFeaturePage {}`;
       badges: ['standalone', 'display', 'onpush'],
       description: 'Linha individual de notificação com badge de tipo, fonte, timestamp relativo e subtítulo.',
       inputs: [
-        { name: 'type', type: 'NotifType', default: "'event'", desc: 'Tipo visual: event, build, alert.' },
-        { name: 'source', type: 'NotifSource', default: "'webhook'", desc: 'Fonte da notificação: webhook, email, system.' },
-        { name: 'timestamp', type: 'Date', default: 'new Date()', desc: 'Data/hora da notificação.', required: true },
+        { name: 'type', type: 'NotifType', default: '-', desc: 'Tipo visual: event, build, alert.', required: true },
+        { name: 'source', type: 'NotifSource', default: '-', desc: 'Fonte da notificação: webhook, email, system.', required: true },
+        { name: 'timestamp', type: 'Date', default: '-', desc: 'Data/hora da notificação.', required: true },
         { name: 'title', type: 'string', default: "''", desc: 'Título da notificação.', required: true },
-        { name: 'subtitle', type: 'string', default: "''", desc: 'Subtítulo descritivo.' },
+        { name: 'subtitle', type: 'string | undefined', default: 'undefined', desc: 'Subtítulo descritivo.' },
         { name: 'read', type: 'boolean', default: 'false', desc: 'Estado lido/não lido.' },
       ],
       outputs: [
@@ -2380,7 +2400,6 @@ export class MyFeaturePage {}`;
         { name: 'active', type: 'string', default: "''", desc: 'Chave ativa no modo single-select.' },
         { name: 'activeKeys', type: 'string[]', default: '[]', desc: 'Chaves ativas no modo multi-select.' },
         { name: 'multiSelect', type: 'boolean', default: 'false', desc: 'Habilita seleção múltipla.' },
-        { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita toda a barra.' },
       ],
       outputs: [
         { name: 'tabChange', type: 'string', default: '-', desc: 'Emitido ao trocar de aba no modo single.' },
@@ -2400,7 +2419,9 @@ export class MyFeaturePage {}`;
     'retro-grid-row': {
       badges: ['standalone', 'layout', 'onpush', 'composable'],
       description: 'Linha genérica de grid — projeta qualquer filho como célula e herda --grid-cols.',
-      inputs: [],
+      inputs: [
+        { name: 'size', type: 'GridRowSize', default: "'md'", desc: 'Tamanho da linha: sm, md, lg.' },
+      ],
       outputs: [],
       slots: 'Content projection para células da linha. Cada filho direto vira uma célula.',
       a11y: [
@@ -2441,6 +2462,8 @@ export class MyFeaturePage {}`;
         { name: 'pageSize', type: 'number', default: '10', desc: 'Itens por página.' },
         { name: 'total', type: 'number', default: '0', desc: 'Total de itens.' },
         { name: 'pageSizeOptions', type: 'number[]', default: '[5, 10, 25, 50]', desc: 'Opções de page size.' },
+        { name: 'showPageSize', type: 'boolean', default: 'true', desc: 'Exibe seletor de page size.' },
+        { name: 'size', type: "'sm' | 'md'", default: "'sm'", desc: 'Tamanho do paginator.' },
         { name: 'disabled', type: 'boolean', default: 'false', desc: 'Desabilita navegação.' },
       ],
       outputs: [
@@ -2494,7 +2517,7 @@ export class MyFeaturePage {}`;
         { name: 'filterOptionsMap', type: 'FilterOptionsMap', default: '{}', desc: 'Opções disponíveis para filtros por coluna.' },
         { name: 'filterRules', type: 'FilterRule[]', default: '[]', desc: 'Regras de filtro avançadas.' },
         { name: 'hiddenCols', type: 'Set<string>', default: 'new Set()', desc: 'Colunas ocultas.' },
-        { name: 'colWidths', type: 'Record<string, string>', default: '{}', desc: 'Larguras customizadas de colunas.' },
+        { name: 'colWidths', type: 'Record<string, number>', default: '{}', desc: 'Larguras customizadas de colunas (em px).' },
       ],
       outputs: [
         { name: 'addClick', type: 'void', default: '-', desc: 'Emitido ao clicar em adicionar.' },
@@ -2503,13 +2526,13 @@ export class MyFeaturePage {}`;
         { name: 'columnFilterChange', type: '{ field: string; values: string[] }', default: '-', desc: 'Emitido ao alterar filtro de coluna.' },
         { name: 'filterRuleAdd', type: 'void', default: '-', desc: 'Emitido ao adicionar regra de filtro.' },
         { name: 'filterRuleRemove', type: 'string', default: '-', desc: 'Emitido ao remover regra (por id).' },
-        { name: 'filterRuleUpdate', type: 'FilterRule', default: '-', desc: 'Emitido ao atualizar regra.' },
+        { name: 'filterRuleUpdate', type: '{ id: string } & Partial<FilterRule>', default: '-', desc: 'Emitido ao atualizar regra.' },
         { name: 'filterRuleClear', type: 'void', default: '-', desc: 'Emitido ao limpar todas as regras.' },
         { name: 'colVisibilityToggle', type: 'string', default: '-', desc: 'Emitido ao alternar visibilidade de coluna.' },
         { name: 'colVisibilityShowAll', type: 'void', default: '-', desc: 'Emitido ao mostrar todas as colunas.' },
-        { name: 'colWidthChange', type: '{ key: string; width: string }', default: '-', desc: 'Emitido ao redimensionar coluna.' },
+        { name: 'colWidthChange', type: '{ key: string; width: number }', default: '-', desc: 'Emitido ao redimensionar coluna.' },
       ],
-      slots: 'Content projection para linhas via <code>GridRow</code> ou <code>ExpandableRow</code>. <code>[grid-empty]</code> para estado vazio.',
+      slots: 'Content projection para linhas via <code>GridRow</code> ou <code>ExpandableRow</code>. <code>[grid-filter]</code> para filtros customizados.',
       a11y: [
         'Cabeçalho de coluna possui <code>role="columnheader"</code> e <code>aria-sort</code>.',
         'Busca global possui <code>aria-label</code>.',
@@ -2524,16 +2547,16 @@ export class MyFeaturePage {}`;
       badges: ['standalone', 'interactive', 'onpush'],
       description: 'Terminal interativo com histórico, tab completion, typewriter, cursor de bloco e comandos registráveis.',
       inputs: [
-        { name: 'prompt', type: 'string', default: "'$ '", desc: 'Texto do prompt.' },
-        { name: 'height', type: 'string', default: "'320px'", desc: 'Altura do container.' },
+        { name: 'prompt', type: 'string', default: "'user@retro:~$ '", desc: 'Texto do prompt.' },
+        { name: 'greeting', type: 'string[]', default: "['Retro Terminal v0.1.0', \"Type 'help' for available commands.\"]", desc: 'Mensagens de boas-vindas exibidas ao iniciar.' },
         { name: 'commands', type: 'TerminalCommand[]', default: '[]', desc: 'Comandos registráveis disponíveis.' },
         { name: 'typewriterSpeed', type: 'number', default: '16', desc: 'Velocidade do efeito typewriter (ms/char). 0 = instantâneo.' },
         { name: 'autofocus', type: 'boolean', default: 'true', desc: 'Foca automaticamente ao renderizar.' },
-        { name: 'historySize', type: 'number', default: '100', desc: 'Tamanho do histórico de comandos.' },
-        { name: 'welcome', type: 'string', default: "''", desc: 'Mensagem de boas-vindas exibida ao iniciar.' },
+        { name: 'maxLines', type: 'number', default: '500', desc: 'Número máximo de linhas no histórico.' },
+        { name: 'windowTitle', type: 'string', default: "'terminal'", desc: 'Título exibido na barra da janela do terminal.' },
       ],
       outputs: [
-        { name: 'commandRun', type: '{ name: string; args: string[] }', default: '-', desc: 'Emitido ao executar um comando.' },
+        { name: 'commandRun', type: '{ cmd: string; args: string[] }', default: '-', desc: 'Emitido ao executar um comando.' },
       ],
       a11y: [
         'Input do terminal possui <code>aria-label</code>.',
@@ -2552,6 +2575,7 @@ export class MyFeaturePage {}`;
         { name: 'options', type: 'string[]', default: '[]', desc: 'Opções exibidas.', required: true },
         { name: 'value', type: 'string', default: "''", desc: 'Opção selecionada.' },
         { name: 'direction', type: "'row' | 'col'", default: "'row'", desc: 'Direção do layout.' },
+        { name: 'ariaLabel', type: 'string', default: "''", desc: 'Label acessível para leitores de tela.' },
       ],
       outputs: [
         { name: 'valueChange', type: 'string', default: '-', desc: 'Emite ao selecionar uma opção.' },
@@ -2606,11 +2630,11 @@ export class MyFeaturePage {}`;
       description: 'Barra de abas estilo terminal com disabled, icon, badge por aba, navegação por teclado (← → Home End) e cinco variantes visuais.',
       inputs: [
         { name: 'tabs', type: 'RetroTab[]', default: '[]', desc: 'Definição das abas.', required: true },
-        { name: 'active', type: 'string', default: "''", desc: 'ID da aba ativa.' },
+        { name: 'active', type: 'string', default: "''", desc: 'ID da aba ativa (two-way via model).' },
         { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
       ],
       outputs: [
-        { name: 'activeChange', type: 'string', default: '-', desc: 'Emitido ao trocar de aba.' },
+        { name: 'activeChange', type: 'string', default: '-', desc: 'Emitido ao trocar de aba (two-way via model).' },
       ],
       slots: 'Content projection para o painel de conteúdo da aba ativa.',
       a11y: [
@@ -2628,7 +2652,7 @@ export class MyFeaturePage {}`;
       description: 'Contêiner estilo fieldset com label na borda — versão leve do window frame para agrupar conteúdo internamente.',
       inputs: [
         { name: 'label', type: 'string', default: "''", desc: 'Texto exibido na borda superior.', required: true },
-        { name: 'variant', type: 'WindowVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
+        { name: 'variant', type: 'SectionVariant', default: "'default'", desc: 'Variante visual: default, terminal, system, alert, ghost.' },
       ],
       outputs: [],
       slots: 'Content projection para o conteúdo interno.',
@@ -3075,7 +3099,6 @@ export class MyFeaturePage {}`;
       case 'terminal':
         return {
           prompt: this.termPrompt(),
-          height: this.termHeight(),
           typewriterSpeed: this.termTypewriterSpeed(),
         };
       case 'segmented':
@@ -3304,7 +3327,6 @@ export class MyFeaturePage {}`;
         break;
       case 'terminal':
         if (typeof state.prompt === 'string') this.termPrompt.set(state.prompt);
-        if (typeof state.height === 'string') this.termHeight.set(state.height);
         if (typeof state.typewriterSpeed === 'number') this.termTypewriterSpeed.set(state.typewriterSpeed);
         break;
       case 'segmented':

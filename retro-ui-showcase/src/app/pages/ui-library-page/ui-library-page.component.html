@@ -881,7 +881,6 @@
                 <div style="width:100%;max-width:760px">
                   <retro-terminal
                     [prompt]="termPrompt()"
-                    [height]="termHeight()"
                     [typewriterSpeed]="termTypewriterSpeed()"
                     [commands]="termDemoCommands"
                     [autofocus]="false"
@@ -1710,10 +1709,6 @@ this.term.clear();"
               <retro-input size="sm" [fullWidth]="true" [value]="termPrompt()" (valueChange)="termPrompt.set($event)" />
             </div>
             <div class="knob">
-              <label class="knob-label">height</label>
-              <retro-input size="sm" [fullWidth]="true" [value]="termHeight()" (valueChange)="termHeight.set($event)" />
-            </div>
-            <div class="knob">
               <label class="knob-label">typewriter speed <span class="knob-hint">ms/line · 0 = instant</span></label>
               <retro-range [value]="termTypewriterSpeed()" [min]="0" [max]="80" [step]="4" [fullWidth]="true" [showValue]="true" (valueChange)="termTypewriterSpeed.set($event)" />
             </div>
@@ -1944,7 +1939,7 @@ this.term.clear();"
   [showCloseButton]="modalShowCloseButton()"
   (closed)="modalOpen.set(false)"
 >
-  <div modal-body class="modal-preview">
+  <div class="modal-preview">
     <p>Este modal usa a mesma linguagem visual da biblioteca interna.</p>
     <p>Suporta tamanhos, área de ações e fechamento por <kbd>Esc</kbd> e backdrop.</p>
     <p class="modal-meta">title: {{ modalTitle() }} · size: {{ modalSize() }}</p>
