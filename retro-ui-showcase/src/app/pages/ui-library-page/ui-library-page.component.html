@@ -15,6 +15,26 @@
       size="sm"
       (valueChange)="setTheme($any($event))"
     />
+    <span class="lib-theme-label">mode:</span>
+    <retro-button-group>
+      <retro-button
+        size="sm"
+        [variant]="displayMode() === 'light' ? 'primary' : 'secondary'"
+        (pressed)="setMode('light')"
+      >☀ light</retro-button>
+      <retro-button
+        size="sm"
+        [variant]="displayMode() === 'dark' ? 'primary' : 'secondary'"
+        (pressed)="setMode('dark')"
+      >☾ dark</retro-button>
+    </retro-button-group>
+    <span class="lib-theme-label">accent:</span>
+    <retro-select
+      [options]="accentOptions"
+      [value]="accent()"
+      size="sm"
+      (valueChange)="setAccent($any($event))"
+    />
     <button
       type="button"
       class="lib-sidebar-toggle"

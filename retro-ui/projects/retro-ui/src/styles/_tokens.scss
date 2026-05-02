@@ -13,8 +13,9 @@
 
 /* ── Primitive tokens (set per theme by ThemeService) ──────────────────── */
 
-/* Classic Amber (light) */
-html[data-theme='classic-amber'] {
+/* Classic Amber — light mode */
+html[data-theme='classic-amber'][data-mode='light'],
+html[data-theme='classic-amber']:not([data-mode]) {
   --_desktop:     #c9c3b2;
   --_panel:       #d8d3c4;
   --_panel-alt:   #e4dfd0;
@@ -29,6 +30,24 @@ html[data-theme='classic-amber'] {
   --_cyan:        #00d3ff;
   --_red:         #ff4136;
   --_input-bg:    #faf9f5;
+}
+
+/* Classic Amber — dark mode */
+html[data-theme='classic-amber'][data-mode='dark'] {
+  --_desktop:     #0d1009;
+  --_panel:       #141810;
+  --_panel-alt:   #1e231a;
+  --_sunken:      #0a0d07;
+  --_line:        #c8c0a0;
+  --_line-soft:   #3a3a2c;
+  --_text:        #d8d0b8;
+  --_muted:       #928878;
+  --_amber:       #ffb000;
+  --_amber-brite: #ffd166;
+  --_phosphor:    #33ff66;
+  --_cyan:        #00d3ff;
+  --_red:         #ff4136;
+  --_input-bg:    #1a1a18;
 }
 
 /* Phosphor Green (light) */

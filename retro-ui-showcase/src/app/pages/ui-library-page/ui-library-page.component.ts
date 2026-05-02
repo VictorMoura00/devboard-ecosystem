@@ -13,7 +13,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { APP_THEMES, DisplayMode, RetroThemeName, ThemeService } from '@retro-ui';
+import { APP_THEMES, DisplayMode, RetroAccent, RetroThemeName, ThemeService } from '@retro-ui';
 import {
   AsciiBarComponent,
   FilterRule,
@@ -192,6 +192,8 @@ export class UiLibraryPageComponent implements OnInit {
   protected readonly themes       = APP_THEMES;
   protected readonly currentTheme = this.themeService.currentTheme;
   protected readonly displayMode  = this.themeService.displayMode;
+  protected readonly accent       = this.themeService.accent;
+  protected readonly isDark       = this.themeService.isDark;
   protected readonly themeOptions = (() => {
     const opts: { label: string; value: string; separator?: boolean }[] = [];
     let hadDark = false;
@@ -208,10 +210,16 @@ export class UiLibraryPageComponent implements OnInit {
     { label: 'Light', value: 'light', icon: '☀' },
     { label: 'Dark', value: 'dark', icon: '☾' },
   ];
+  protected readonly accentOptions: { label: string; value: RetroAccent }[] = [
+    { label: 'Amber', value: 'amber' },
+    { label: 'Green', value: 'green' },
+    { label: 'Cyan', value: 'cyan' },
+  ];
 
   protected setTheme(name: RetroThemeName): void { this.themeService.setTheme(name); }
   protected setMode(mode: DisplayMode): void  { this.themeService.setMode(mode); }
   protected toggleMode(): void { this.themeService.toggleMode(); }
+  protected setAccent(accent: RetroAccent): void { this.themeService.setAccent(accent); }
 
   // ── Foundations data ────────────────────────────────────────────────────
 
@@ -405,26 +413,28 @@ Derived from semantic tokens.
 
 ## Architecture
 
-Theme and Mode are independent:
+Theme and Mode are independent concepts:
 
-- **Theme** defines the color palette identity (Classic Amber, Synthwave, etc.)
-- **Mode** determines surface mapping (light or dark)
+- **Theme** = visual identity (retro-classico)
+- **Mode** = luminosity (light | dark)
+- **Accent** = highlight color (amber | green | cyan)
 
 \`\`\`
-Theme: retro-classic-amber
-Mode: light | dark
+Theme:  retro-classico
+Mode:   light | dark
+Accent: amber | green | cyan
 \`\`\`
 
-## Themes
+## retro-classico
 
-| Theme | Mode | Accent |
-|-------|------|--------|
-| Classic Amber | light | amber |
-| Phosphor Green | light | green |
-| CRT Blue | light | blue |
-| Dark Amber | dark | amber |
-| Synthwave | dark | pink |
-| Solar Sepia | dark | amber |
+The default retro theme. It supports both light and dark modes:
+
+| Mode | Background | Panels | Text | Accent |
+|------|------------|--------|------|--------|
+| light | warm paper (#c9c3b2) | parchment (#d8d3c4) | graphite (#1a1a18) | amber (#ffb000) |
+| dark | charcoal (#0d1009) | deep green-black (#141810) | warm ivory (#d8d0b8) | amber (#ffb000) |
+
+Other palettes (phosphor-green, crt-blue, synthwave, solar-sepia) are available as alternative identities.
 
 ## Mode Switching
 
@@ -435,18 +445,26 @@ Mode changes semantic surface tokens globally. No component-level overrides need
 themeService.setTheme('classic-amber');
 themeService.setMode('dark');
 themeService.toggleMode();
+themeService.setAccent('green');
 \`\`\`
 
 \`\`\`html
 <!-- HTML attributes set by ThemeService -->
-<html data-theme="classic-amber" data-mode="dark">
+<html data-theme="classic-amber" data-mode="dark" data-accent="amber">
 \`\`\`
+
+## Token Layers
+
+1. **Primitives** (\`--_panel\`, \`--_text\`) — raw values per theme+mode
+2. **Semantic** (\`--panel\`, \`--text\`) — mapped from primitives
+3. **Component** (\`--button-primary-bg\`) — derived from semantic
 
 ## Best Practices
 
 - ✅ Use semantic tokens (\`--panel\`, \`--text\`)
 - ✅ Let mode handle light/dark surfaces
 - ✅ Use \`--focus-ring\` for focus states
+- ✅ Theme and mode are separate; dark is a mode, not a theme
 - ❌ Don't use primitive tokens (\`--_panel\`)
 - ❌ Don't hardcode colors in components
 - ❌ Don't create separate dark mode styles per component`;
@@ -1824,7 +1842,7 @@ export class MyFeaturePage {}`;
     'foundations-borders':    { badges: ['standalone'], description: 'Border widths, radii, and edge treatment patterns.', a11y: [], practices: [] },
     'foundations-shadows':    { badges: ['standalone'], description: 'Shadow tokens for depth, elevation, and glow effects.', a11y: [], practices: [] },
     'foundations-states':     { badges: ['standalone'], description: 'Interactive state tokens — hover, focus, active, disabled conventions.', a11y: [], practices: [] },
-    'foundations-theme':      { badges: ['standalone'], description: 'Theme architecture: primitives, semantic mapping, mode switching, and accent colors.', a11y: [], practices: [] },
+    'foundations-theme':      { badges: ['standalone'], description: 'Theme architecture: retro-classico identity with light/dark modes and accent colors. Primitives, semantic mapping, and mode switching.', a11y: [], practices: [] },
     'foundations-a11y':       { badges: ['standalone'], description: 'Accessibility guidelines, contrast requirements, keyboard navigation patterns, and ARIA conventions.', a11y: [], practices: [] },
 
     win: {

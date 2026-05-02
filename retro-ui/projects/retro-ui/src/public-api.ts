@@ -1,6 +1,7 @@
 // === Theme ===
 export * from './lib/theme/theme.model';
 export * from './lib/theme/theme.service';
+export type { RetroThemeMode, RetroAccent } from './lib/theme/theme.model';
 
 // === Primitives / Atoms ===
 export * from './lib/retro-button/retro-button.component';

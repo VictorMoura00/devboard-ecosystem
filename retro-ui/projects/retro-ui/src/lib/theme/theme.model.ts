@@ -7,8 +7,10 @@ export type RetroThemeName =
   | 'solar-sepia';
 
 export type DisplayMode = 'light' | 'dark';
+export type RetroThemeMode = DisplayMode;
 
 export type AccentColor = 'amber' | 'green' | 'blue' | 'pink';
+export type RetroAccent = 'amber' | 'green' | 'cyan';
 
 export interface RetroTheme {
   name:     RetroThemeName;
