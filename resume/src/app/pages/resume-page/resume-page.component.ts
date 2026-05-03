@@ -16,7 +16,6 @@ import {
   RetroButtonComponent,
   RetroDataGridComponent,
   RetroGridRowComponent,
-  RetroRangeComponent,
   RetroStatusBarComponent,
   RetroTagComponent,
   RetroTerminalComponent,
@@ -55,7 +54,6 @@ function calcDuration(startYearMonth: string, endYearMonth?: string): string {
     DecimalPipe,
     RetroWindowComponent,
     RetroButtonComponent,
-    RetroRangeComponent,
     RetroTagComponent,
     RetroTerminalComponent,
     RetroStatusBarComponent,
@@ -140,6 +138,7 @@ export class ResumePageComponent implements OnInit, OnDestroy {
   }
 
   private initAudio(): void {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const audio = new Audio('/ambient.mp3');
     audio.volume = this.audioVolume();
     audio.loop   = true;
@@ -149,6 +148,11 @@ export class ResumePageComponent implements OnInit, OnDestroy {
         this.audioProgress.set((audio.currentTime / audio.duration) * 100);
       }
     }, 500);
+
+    if (prefersReduced) {
+      this.bgAudio = audio;
+      return;
+    }
 
     audio.play()
       .then(() => this.audioPlaying.set(true))
