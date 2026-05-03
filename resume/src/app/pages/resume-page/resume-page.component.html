@@ -16,6 +16,7 @@
             [class.cv-theme-dot--active]="currentTheme() === theme.name"
             [style.background]="theme.accent"
             [title]="theme.label"
+            [attr.aria-label]="'Tema ' + theme.label"
             (click)="setTheme(theme.name)"
           ></button>
         }
@@ -33,6 +34,7 @@
         href="/assets/cv-victor-moura.pdf"
         download="cv-victor-moura.pdf"
         icon="↓"
+        ariaLabel="Baixar currículo em PDF"
       >PDF</retro-button>
     </div>
   </div>
@@ -161,17 +163,17 @@
       <!-- Left: connect links + download -->
       <retro-window title="connect" padding="none">
         <div class="cv-ghcard-links">
-          <a class="cv-connect-item" href="https://github.com/VictorMoura00" target="_blank" rel="noopener">
+          <a class="cv-connect-item" href="https://github.com/VictorMoura00" target="_blank" rel="noopener" aria-label="Perfil no GitHub">
             <span class="cv-connect-icon">♦</span>
             <span class="cv-connect-url">github.com/VictorMoura00</span>
             <span class="cv-connect-arrow">›</span>
           </a>
-          <a class="cv-connect-item" href="https://www.linkedin.com/in/victor-moura-69a284212/" target="_blank" rel="noopener">
+          <a class="cv-connect-item" href="https://www.linkedin.com/in/victor-moura-69a284212/" target="_blank" rel="noopener" aria-label="Perfil no LinkedIn">
             <span class="cv-connect-icon">▣</span>
             <span class="cv-connect-url">linkedin.com/in/victor-moura</span>
             <span class="cv-connect-arrow">›</span>
           </a>
-          <a class="cv-connect-item" href="mailto:victormoura@proton.me">
+          <a class="cv-connect-item" href="mailto:victormoura@proton.me" aria-label="Enviar e-mail">
             <span class="cv-connect-icon">✉</span>
             <span class="cv-connect-url">victormoura&#64;proton.me</span>
             <span class="cv-connect-arrow">›</span>
@@ -185,6 +187,7 @@
             [fullWidth]="true"
             href="/assets/cv-victor-moura.pdf"
             download="cv-victor-moura.pdf"
+            ariaLabel="Baixar currículo em PDF"
           >DOWNLOAD CV.PDF</retro-button>
         </div>
       </retro-window>
@@ -392,7 +395,7 @@
 
             @if (proj.link) {
               <div class="cv-proj-link">
-                <retro-button variant="ghost" size="sm" [href]="'https://' + proj.link">
+                <retro-button variant="ghost" size="sm" [href]="'https://' + proj.link" [attr.aria-label]="'Abrir projeto ' + proj.name">
                   ↗ {{ proj.link }}
                 </retro-button>
               </div>

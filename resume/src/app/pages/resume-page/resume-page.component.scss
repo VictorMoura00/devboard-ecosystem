@@ -754,3 +754,182 @@
 .cv-proj-link {
   margin-top: auto;
 }
+
+// ── Focus visibility ──────────────────────────────────────────────────────────
+.cv-tab:focus-visible,
+.cv-theme-dot:focus-visible,
+.cv-connect-item:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+// ── Responsiveness ────────────────────────────────────────────────────────────
+@media (max-width: 1024px) {
+  .cv-whoami-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-github-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-exp-body {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-exp-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cv-projects-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cv-nav-top {
+    padding: 0 12px;
+  }
+
+  .cv-nav-brand {
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .cv-brand-name {
+    font-size: 11px;
+  }
+
+  .cv-brand-meta {
+    display: none;
+  }
+
+  .cv-nav-actions {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .cv-nav-tabs {
+    padding: 0 4px;
+  }
+
+  .cv-tab {
+    padding: 12px 14px 9px;
+    font-size: 10px;
+  }
+
+  .cv-hero-inner {
+    padding: 32px 20px 28px;
+  }
+
+  .cv-hero-tagline br {
+    display: none;
+  }
+
+  .cv-main {
+    padding: 24px 16px 32px;
+    gap: 24px;
+  }
+
+  .cv-section-title {
+    font-size: 28px;
+  }
+
+  .cv-gh-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cv-gh-stat {
+    border-bottom: 1px solid var(--line);
+    border-right: none;
+
+    &:nth-child(odd) {
+      border-right: 1px solid var(--line);
+    }
+
+    &:nth-last-child(-n+2) {
+      border-bottom: none;
+    }
+  }
+
+  .cv-stack-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .cv-hero-name {
+    font-size: clamp(36px, 12vw, 60px);
+  }
+
+  .cv-hero-tagline {
+    font-size: 12px;
+  }
+
+  .cv-meta-role,
+  .cv-meta-open,
+  .cv-meta-divider {
+    display: none;
+  }
+
+  .cv-meta-stat {
+    font-size: 10px;
+  }
+
+  .cv-idcard-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cv-idcard-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 32px;
+  }
+
+  .cv-edu-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .cv-edu-meta {
+    white-space: normal;
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .cv-hero-name--glitch {
+    animation: none;
+  }
+
+  .cv-cursor {
+    animation: none;
+  }
+
+  .cv-hero::before {
+    transition: none;
+  }
+
+  .cv-tab {
+    transition: none;
+  }
+
+  .cv-theme-dot {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .cv-connect-item {
+    transition: none;
+  }
+
+  .cv-contrib-grid {
+    overflow-x: auto;
+  }
+}
