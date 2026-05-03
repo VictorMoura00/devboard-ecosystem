@@ -37,6 +37,17 @@
   50%       { transform: scaleY(1);   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .np-eq-bar {
+    animation: none;
+    transform: none;
+  }
+
+  .np-progress {
+    transition: none;
+  }
+}
+
 // ── Label ─────────────────────────────────────────────────────────────────────
 
 .np-label {
